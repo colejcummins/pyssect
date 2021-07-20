@@ -1,0 +1,2 @@
+# pyssect
+Python code dissector
