@@ -6,7 +6,6 @@ export interface Location {
   column: number;
 }
 
-
 export enum ControlEvent {
   False,
   True,
@@ -20,7 +19,6 @@ export enum ControlEvent {
   Finally
 }
 
-
 export enum ASTType {
   If,
   For,
@@ -30,24 +28,21 @@ export enum ASTType {
   Default
 }
 
-
 export interface IPyssectNode {
   name: string;
   type?: ASTType;
   start?: Location;
   end?: Location;
   contents: any[];
-  children: { [key: string]: ControlEvent };
-  parents: { [key: string]: ControlEvent };
+  children: Record<string, ControlEvent>;
+  parents: Record<string, ControlEvent>;
 }
-
 
 export interface IPyssectGraph {
   name: string;
   root: string;
-  nodes: { [key: string]: IPyssectNode };
+  nodes: Record<string, IPyssectNode>;
 }
-
 
 export interface IPyssectGraphDict {
   [key: string]: IPyssectGraph

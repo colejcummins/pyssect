@@ -10,54 +10,89 @@ function App() {
     <PyssectGraph
       name={'test'}
       root={'root'}
-      nodes={{
-        "root": {
-          "name": "root",
-          "contents": [
-            "x = 1"
-          ],
-          "children": {
-            "While_3_0": ""
-          },
-          "parents": {}
+      nodes={{"root": {
+        "name": "root",
+        "type": "Assign",
+        "start": {
+          "line": 1,
+          "column": 0
         },
-        "While_3_0": {
-          "name": "While_3_0",
-          "contents": [
-            "while x < 5:\n    ..."
-          ],
-          "children": {
-            "AugAssign_4_2": "True",
-            "exit_While_3_0": ""
-          },
-          "parents": {
-            "root": "",
-            "AugAssign_4_2": ""
-          }
+        "end": {
+          "line": 2,
+          "column": 5
         },
-        "AugAssign_4_2": {
-          "name": "AugAssign_4_2",
-          "contents": [
-            "x += 1"
-          ],
-          "children": {
-            "While_3_0": ""
-          },
-          "parents": {
-            "While_3_0": "True"
-          }
+        "parents": {},
+        "children": {
+          "If_3_0": ""
         },
-        "exit_While_3_0": {
-          "name": "exit_While_3_0",
-          "contents": [
-            "x = 2"
-          ],
-          "children": {},
-          "parents": {
-            "While_3_0": ""
-          }
-        }
-      }}
+        "contents": [
+          "x = 1"
+        ]
+      },
+      "If_3_0": {
+        "name": "If_3_0",
+        "type": "",
+        "start": {
+          "line": 3,
+          "column": 0
+        },
+        "end": {
+          "line": 4,
+          "column": 8
+        },
+        "parents": {
+          "root": ""
+        },
+        "children": {
+          "AugAssign_4_2": "True",
+          "exit_If_3_0": ""
+        },
+        "contents": [
+          "if x < 4:\n    ..."
+        ]
+      },
+      "AugAssign_4_2": {
+        "name": "AugAssign_4_2",
+        "type": "",
+        "start": {
+          "line": 4,
+          "column": 2
+        },
+        "end": {
+          "line": 4,
+          "column": 8
+        },
+        "parents": {
+          "If_3_0": "True"
+        },
+        "children": {
+          "exit_If_3_0": ""
+        },
+        "contents": [
+          "x += 2"
+        ]
+      },
+      "exit_If_3_0": {
+        "name": "exit_If_3_0",
+        "type": "AugAssign",
+        "start": {
+          "line": 4,
+          "column": 8
+        },
+        "end": {
+          "line": 5,
+          "column": 6
+        },
+        "parents": {
+          "AugAssign_4_2": "",
+          "If_3_0": ""
+        },
+        "children": {},
+        "contents": [
+          "x -= 1"
+        ]
+      }
+    }}
     />
   );
 }

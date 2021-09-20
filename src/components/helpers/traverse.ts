@@ -10,7 +10,7 @@ export function* walkChildNodes(node: IPyssectNode, graph: IPyssectGraph) {
 
 export function* walkGraph(graph: IPyssectGraph) {
   let nodes: IPyssectNode[] = [graph.nodes[graph.root]]
-  let visited = new Set()
+  let visited = new Set<IPyssectNode>()
   while (nodes.length > 0) {
     let node = nodes.shift() as IPyssectNode
     if (!visited.has(node)) {

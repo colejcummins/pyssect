@@ -8,13 +8,17 @@ export function buildFlow(graph: IPyssectGraph): Elements {
     [
       {
         id: node.name,
-        type: 'default',
-        data: { text: node.contents },
-        position: { x: ind * 40, y: ind * 40 }
+        type: 'pyssectNode',
+        data: {
+          node
+        },
+        position: { x: ind * 80, y: ind * 80 }
       }, ...Object.entries(node.children).map(([key, value]) => ({
         id: `${node.name}-${key}`,
         source: node.name,
         target: key,
+        sourceHandle: value.toString(),
+        targetHandle: value.toString(),
         label: value
       }))
     ]
