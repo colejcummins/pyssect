@@ -30,12 +30,13 @@ export enum ASTType {
 
 export interface IPyssectNode {
   name: string;
-  type?: ASTType;
+  type?: ASTType | string;
   start?: Location;
   end?: Location;
   contents: any[];
-  children: Record<string, ControlEvent>;
-  parents: Record<string, ControlEvent>;
+  depth?: number;
+  children: Record<string, ControlEvent | string>;
+  parents: Record<string, ControlEvent | string>;
 }
 
 export interface IPyssectGraph {

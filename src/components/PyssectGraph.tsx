@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import ReactFlow, { Elements } from "react-flow-renderer";
+import ReactFlow, { Elements, MiniMap } from "react-flow-renderer";
 
 import { IPyssectGraph } from './types'
 import PyssectNode from './PyssectNode';
@@ -11,6 +11,7 @@ const PyssectGraph: React.FC<IPyssectGraph> = props => {
 
   useEffect(() => {
     let flow = buildFlow(props);
+    console.log(flow);
     setElements(flow);
   }, []);
 
@@ -28,7 +29,11 @@ const PyssectGraph: React.FC<IPyssectGraph> = props => {
         nodeTypes={{
           'pyssectNode': PyssectNode
         }}
-      />
+        snapToGrid={true}
+        snapGrid={[10, 10]}
+      >
+        <MiniMap />
+      </ReactFlow>
     </div>
   );
 };

@@ -1,7 +1,10 @@
 import pdb
 from typing import Any
+from types import FrameType
+import dis
 import bdb
 import sys
+import subprocess
 
 def arbitrary_fun(a, b):
   a += b
@@ -9,23 +12,26 @@ def arbitrary_fun(a, b):
   return a + b
 
 def other_arbitrary_fun():
-  print(arbitrary_fun)
-  a = 2
-  b = 3
+  print(1)
+  print(2)
   print(arbitrary_fun(a, b))
 
 
-def dispatch_function(frame: bdb.FrameType, event: str, arg: Any):
-
+def dispatch_function(frame: FrameType, event: str, arg: Any):
+  print(f'frame: {frame}')
+  print(f'event: {event}')
   pass
 
+PYTHON_PROGRAM = """
+if __name__ == '__main__':
+  print(10)
+  print(20)
+"""
 
 def main():
+  subprocess.run(['python', '-m', 'pdb', 'src/pyssectgraph/tests/cfg_test.py'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
   # pdb.run('other_arbitrary_fun()')
-  debugger = bdb.Bdb()
-  sys.settrace
-
-  debugger.trace_dispatch()
+  pass
 
 if __name__ == '__main__':
   main()

@@ -9,7 +9,7 @@ import functools
 from types import BuiltinFunctionType
 import types
 from typing import Dict
-from pyssectgraph import builds, cfg_dumps, CFG
+from pyssectgraph import builds, PyssectGraph, pyssect_dumps
 import json
 
 PROGRAM = """
@@ -278,7 +278,7 @@ def test_if_exp(n):
   pdb.set_trace()
   return n if n < 5 else n - 1
 
-def build_from_file(file_name: str, clean) -> Dict[str, CFG]:
+def build_from_file(file_name: str, clean) -> Dict[str, PyssectGraph]:
   d = {}
   with open(file_name, 'r') as f:
     prog = ''.join(f.readlines())
@@ -291,10 +291,7 @@ def sum_lengths(cfg) -> int:
 
 
 def main():
-  print(inspect.getsource(sys._getframe()))
-  print(cfg_dumps(builds(TRY_WITH_FINALLY_ELSE, True), simple=True))
-
-
+  print(pyssect_dumps(builds(TRY_WITH_FINALLY_ELSE, True), simple=True))
 
 def is_user_function(name: str) -> bool:
   return name not in builtins.__dict__
