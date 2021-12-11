@@ -128,7 +128,6 @@ class PyssectGraph:
   def _can_remove(self, node: PyssectNode) -> bool:
     return (
         len(node.contents) == 0 and
-        len(node.parents) <= 1 and
         len(node.children) <= 1 and
         node.name != 'root'
       )

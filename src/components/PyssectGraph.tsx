@@ -22,7 +22,7 @@ const PyssectGraph: React.FC<IPyssectGraph> = props => {
 
 
   return (
-    <div style={{width: '100%', height: '100%', backgroundColor: theme.colors.black}}>
+    <div style={{width: '70%', height: '100%', backgroundColor: theme.colors.black}}>
       <ReactFlow
         onLoad={onLoad}
         elements={elements}

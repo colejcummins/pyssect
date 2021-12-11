@@ -4,7 +4,7 @@ from builders import builds_file
 from serializers import pyssect_dumps
 
 def main():
-  cfg = builds_file(sys.argv[1])
+  cfg = builds_file(sys.argv[1], True)
   print(cfg)
   out = pyssect_dumps(cfg)
   print(out)
