@@ -9,6 +9,7 @@ import theme from "../theme";
 const PyssectGraph: React.FC<IPyssectGraph> = props => {
   let [elements, setElements] = useState<Elements>([]);
 
+  console.log(props);
   useEffect(() => {
     let flow = buildFlow(props);
     console.log(flow);

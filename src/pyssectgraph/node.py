@@ -37,6 +37,10 @@ def ast_to_marshalled_ast(type: Type) -> MarshalledASTType:
     return MarshalledASTType.For
   if type in {ast.Return, ast.Yield, ast.YieldFrom}:
     return MarshalledASTType.Return
+  if type == ast.Try:
+    return MarshalledASTType.Try
+  else:
+    return MarshalledASTType.Default
 
 
 @dataclass
@@ -68,6 +72,7 @@ class PyssectNode:
   """
   name: str = 'root'
   type: str = ''
+  marshalled_type: MarshalledASTType = field(default_factory=MarshalledASTType)
   start: Location = field(default_factory=Location)
   end: Location = field(default_factory=Location)
   parents: Dict[str, ControlEvent] = field(default_factory=dict)
@@ -106,8 +111,9 @@ class PyssectNode:
     """Append anything to contents"""
     self.contents.append(contents)
     if isinstance(contents, ast.AST):
-      if len(self.contents) == 1:
+      if len(self.contents) == 0:
         self.type = type(contents).__name__
+        self.marshalled_type = ast_to_marshalled_ast(type(contents))
       self.end = Location.default_end(contents)
     elif isinstance(contents, Instruction):
       self.end = contents.starts_line or 0

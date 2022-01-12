@@ -16,7 +16,6 @@ const PyssectEditor = ({text}: {text: string}): JSX.Element => {
         width: '30%',
         height: '100%',
         backgroundColor: theme.colors.darkGray,
-        borderLeft: `1px solid ${theme.colors.lightGray}`
       }}
     >
       <SyntaxHighlighter

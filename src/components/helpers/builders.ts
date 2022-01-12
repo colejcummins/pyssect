@@ -1,7 +1,7 @@
 import { ArrowHeadType, Edge, Elements } from 'react-flow-renderer';
 
 import { IPyssectGraph, IPyssectNode } from "../types";
-import { walkGraph } from "./traverse";
+import { breadthFirstWalkGraph, depthFirstWalkGraph } from "./traverse";
 import theme from "../../theme";
 
 function buildEdges(node: IPyssectNode): Edge[] {
@@ -25,15 +25,15 @@ function buildEdges(node: IPyssectNode): Edge[] {
 
 function getDepths(graph: IPyssectGraph): Record<number, number> {
   const depths: Record<number, number> = {}
-  for (let node of walkGraph(graph)) {
-    depths[node.depth || 0] = (depths[node.depth || 0] || 0) + 1
+  for (let node of depthFirstWalkGraph(graph)) {
+    console.log(node);
   }
   return depths;
 }
 
 export function buildFlow(graph: IPyssectGraph): Elements {
-  const depths = getDepths(graph);
-  return Array.from(walkGraph(graph)).flatMap((node, ind) => {
+  getDepths(graph);
+  return Array.from(breadthFirstWalkGraph(graph)).flatMap((node, ind) => {
     return [
         {
           id: node.name,
@@ -47,5 +47,3 @@ export function buildFlow(graph: IPyssectGraph): Elements {
     }
   )
 }
-
-
