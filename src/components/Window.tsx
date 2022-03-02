@@ -50,7 +50,7 @@ const Window = () => {
             "parents": {
               "root": "",
               "Continue_7_4": "continue",
-              "exit_If_6_2": ""
+              "If_6_2": ""
             },
             "children": {
               "AugAssign_3_2": "True",
@@ -141,7 +141,7 @@ const Window = () => {
             },
             "children": {
               "Continue_7_4": "",
-              "exit_If_6_2": ""
+              "While_2_0": ""
             },
             "contents": [
               "if x == 7:\n    ..."
@@ -167,25 +167,6 @@ const Window = () => {
             "contents": [
               "continue"
             ]
-          },
-          "exit_If_6_2": {
-            "name": "exit_If_6_2",
-            "type": "",
-            "start": {
-              "line": 7,
-              "column": 12
-            },
-            "end": {
-              "line": 7,
-              "column": 12
-            },
-            "parents": {
-              "If_6_2": ""
-            },
-            "children": {
-              "While_2_0": ""
-            },
-            "contents": []
           },
           "exit_While_2_0": {
             "name": "exit_While_2_0",

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import ReactFlow, { Elements, MiniMap } from "react-flow-renderer";
+import ReactFlow, { Elements, MiniMap, Background, BackgroundVariant } from "react-flow-renderer";
 
 import { IPyssectGraph } from './types'
 import PyssectNode from './PyssectNode';
@@ -16,16 +16,10 @@ const PyssectGraph: React.FC<IPyssectGraph> = props => {
     setElements(flow);
   }, []);
 
-  const onLoad = (reactFlowInstance: any) => {
-    console.log('flow loaded:', reactFlowInstance);
-    reactFlowInstance.fitView();
-  };
-
-
   return (
     <div style={{width: '70%', height: '100%', backgroundColor: theme.colors.black}}>
       <ReactFlow
-        onLoad={onLoad}
+        onLoad={(instance) => instance.fitView()}
         elements={elements}
         nodeTypes={{
           'pyssectNode': PyssectNode
@@ -33,7 +27,15 @@ const PyssectGraph: React.FC<IPyssectGraph> = props => {
         snapToGrid={true}
         snapGrid={[10, 10]}
       >
-        <MiniMap />
+        <MiniMap
+          nodeColor={theme.colors.darkGray}
+        />
+        <Background
+          variant={BackgroundVariant.Dots}
+          color={theme.colors.gray}
+          gap={10}
+          size={0.5}
+        />
       </ReactFlow>
     </div>
   );

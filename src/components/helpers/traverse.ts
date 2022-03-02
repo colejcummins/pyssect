@@ -1,6 +1,6 @@
 import { ControlEvent, IPyssectGraph, IPyssectNode } from "../types";
 
-const EVENTS: (string | ControlEvent)[] = ["True", "False", "try", "excepts", "finally"];
+const EVENTS: (string | ControlEvent)[] = ["True", "False", "try", "excepts", "finally", ""];
 
 function sortChildrenByEvent(a: [string, string | ControlEvent], b: [string, string | ControlEvent]) {
   return EVENTS.indexOf(a[1]) - EVENTS.indexOf(b[1])
@@ -20,11 +20,11 @@ export function* depthFirstWalkGraph(graph: IPyssectGraph) {
   yield* traverseGraph(graph, (ns) => ns.pop())
 }
 
-function* traverseGraph(graph: IPyssectGraph, expose: (ns: IPyssectNode[]) => IPyssectNode | undefined) {
+function* traverseGraph(graph: IPyssectGraph, getNode: (ns: IPyssectNode[]) => IPyssectNode | undefined) {
   let nodes: IPyssectNode[] = [graph.nodes[graph.root]]
   let visited = new Set<IPyssectNode>()
   while (nodes.length > 0) {
-    let node = expose(nodes) as IPyssectNode
+    let node = getNode(nodes) as IPyssectNode
     if (!visited.has(node)) {
       visited.add(node)
       yield node

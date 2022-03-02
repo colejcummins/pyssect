@@ -13,6 +13,9 @@ function buildEdges(node: IPyssectNode): Edge[] {
     sourceHandle: `handle-${node.name}-${value.toString() || "default"}`,
     targetHandle: `handle-${key}-${value.toString() || "default"}`,
     label: value,
+    style: {
+      stroke: theme.colors.white,
+    },
     labelBgStyle: {
       fill: theme.colors.black
     },
@@ -32,7 +35,6 @@ function getDepths(graph: IPyssectGraph): Record<number, number> {
 }
 
 export function buildFlow(graph: IPyssectGraph): Elements {
-  getDepths(graph);
   return Array.from(breadthFirstWalkGraph(graph)).flatMap((node, ind) => {
     return [
         {
