@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import ReactFlow, { Elements, MiniMap, Background, BackgroundVariant } from "react-flow-renderer";
 
 import { IPyssectGraph } from './types'
@@ -9,12 +9,14 @@ import theme from "../theme";
 const PyssectGraph: React.FC<IPyssectGraph> = props => {
   let [elements, setElements] = useState<Elements>([]);
 
-  console.log(props);
-  useEffect(() => {
-    let flow = buildFlow(props);
-    console.log(flow);
+  const fetchGraph = useCallback(async () => {
+    let flow = await buildFlow(props);
     setElements(flow);
   }, []);
+
+  useEffect(() => {
+    fetchGraph();
+  }, [fetchGraph]);
 
   return (
     <div style={{width: '70%', height: '100%', backgroundColor: theme.colors.black}}>

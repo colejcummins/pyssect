@@ -1,4 +1,5 @@
 import { ArrowHeadType, Edge, Elements } from 'react-flow-renderer';
+import ELK, {ElkEdge, ElkNode} from 'elkjs/lib/elk.bundled.js';
 
 import { IPyssectGraph, IPyssectNode } from "../types";
 import { breadthFirstWalkGraph, depthFirstWalkGraph } from "./traverse";
@@ -26,15 +27,51 @@ function buildEdges(node: IPyssectNode): Edge[] {
   })) : [];
 }
 
-function getDepths(graph: IPyssectGraph): Record<number, number> {
-  const depths: Record<number, number> = {}
-  for (let node of depthFirstWalkGraph(graph)) {
-    console.log(node);
-  }
-  return depths;
+function layoutEdges(node: IPyssectNode) {
+  return node.children ? Object.entries(node.children).map(([key, _value]) => ({
+    id: `${node.name}-${key}`,
+    source: node.name,
+    target: key,
+  })) : []
 }
 
-export function buildFlow(graph: IPyssectGraph): Elements {
+function layoutPositions(graph: IPyssectGraph) {
+  const children = [];
+  const edges = [];
+  for (let node of breadthFirstWalkGraph(graph)) {
+    children.push({
+      id: node.name,
+      width: 100,
+      height: 100,
+    });
+    edges.push(...layoutEdges(node))
+  }
+
+  const elkGraph = {
+    id: 'root',
+    children: children,
+    edges: edges
+  }
+
+  console.log(children);
+  console.log(edges);
+  const elk = new ELK();
+  return elk.layout(elkGraph, {
+    layoutOptions: {
+			algorithm: 'layered',
+      'elk.direction': 'DOWN',
+    }
+  })
+}
+
+export async function buildFlow(graph: IPyssectGraph) {
+  const positions = await layoutPositions(graph);
+  console.log(positions);
+  const children = Object.fromEntries(
+    positions.children!.map(e => [e.id, {x: e.x!, y: e.y!}])
+  );
+
+  console.log(children);
   return Array.from(breadthFirstWalkGraph(graph)).flatMap((node, ind) => {
     return [
         {
@@ -43,7 +80,7 @@ export function buildFlow(graph: IPyssectGraph): Elements {
           data: {
             node
           },
-          position: { x: 100, y: ind * 100 }
+          position: { x: children[node.name].x, y: children[node.name].y }
         }, ...buildEdges(node)
       ]
     }
