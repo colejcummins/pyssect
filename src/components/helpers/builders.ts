@@ -42,8 +42,9 @@ function layoutPositions(graph: IPyssectGraph) {
   for (let node of breadthFirstWalkGraph(graph)) {
     children.push({
       id: node.name,
+      // TODO - add more accurate dimensions
       width: 150,
-      height: 100,
+      height: Math.max((node.contents.length * 30) + 30, 100),
       layoutOptions: {
         partition: ind.toString(),
       }
@@ -58,26 +59,22 @@ function layoutPositions(graph: IPyssectGraph) {
     edges: edges
   }
 
-  console.log(children);
-  console.log(edges);
-  const elk = new ELK();
-  return elk.layout(elkGraph, {
+  return (new ELK()).layout(elkGraph, {
     layoutOptions: {
 			algorithm: 'layered',
       'elk.direction': 'DOWN',
       'partitioning.activate': 'true',
+      nodeSpacing: '10',
     }
   })
 }
 
 export async function buildFlow(graph: IPyssectGraph) {
   const positions = await layoutPositions(graph);
-  console.log(positions);
   const children = Object.fromEntries(
     positions.children!.map(e => [e.id, {x: e.x!, y: e.y!}])
   );
 
-  console.log(children);
   return Array.from(breadthFirstWalkGraph(graph)).flatMap((node, ind) => {
     return [
         {

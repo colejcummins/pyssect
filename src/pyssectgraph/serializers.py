@@ -64,8 +64,8 @@ def pyssect_dumps(obj, indent: int=2, simple: bool = False) -> str:
       return obj.value
     if isinstance(obj, ast.AST):
       if isinstance(obj, ast.Try):
-        return ast.unparse(_try_no_recurse(obj))
-      return ast.unparse(_ast_no_recurse(obj))
+        return ast.unparse(_try_no_recurse(obj)).split('\n')
+      return ast.unparse(_ast_no_recurse(obj)).split('\n')
     return json.JSONEncoder.default(obj)
 
   return json.dumps(obj, default=_default, indent=indent)
