@@ -19,7 +19,7 @@ const PyssectEditor = ({text}: {text: string}): JSX.Element => {
       }}
     >
       <SyntaxHighlighter
-        customStyle={{ fontSize: '14px', padding: '5px', margin: '10px', background: theme.colors.gray.gray80}}
+        customStyle={{ fontSize: '16px', padding: '5px', margin: '10px', background: theme.colors.gray.gray80}}
         language="python"
         style={oneDark}
         showLineNumbers={true}

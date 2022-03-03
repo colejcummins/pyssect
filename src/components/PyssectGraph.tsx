@@ -6,11 +6,11 @@ import PyssectNode from './PyssectNode';
 import { buildFlow } from './helpers/builders';
 import theme from "../theme";
 
-const PyssectGraph: React.FC<IPyssectGraph> = props => {
+const PyssectGraph = ({graph}: {graph: IPyssectGraph}): JSX.Element => {
   let [elements, setElements] = useState<Elements>([]);
 
   const fetchGraph = useCallback(async () => {
-    let flow = await buildFlow(props);
+    let flow = await buildFlow(graph);
     setElements(flow);
   }, []);
 
@@ -30,7 +30,11 @@ const PyssectGraph: React.FC<IPyssectGraph> = props => {
         snapGrid={[10, 10]}
       >
         <MiniMap
-          nodeColor={theme.colors.gray.gray80}
+          nodeColor={theme.colors.gray.gray60}
+          maskColor={`${theme.colors.gray.gray20}20`}
+          style={{
+            background: theme.colors.gray.gray100,
+          }}
         />
         <Background
           variant={BackgroundVariant.Dots}
