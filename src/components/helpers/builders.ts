@@ -18,7 +18,7 @@ function buildEdges(node: IPyssectNode): Edge[] {
       stroke: theme.colors.white,
     },
     labelBgStyle: {
-      fill: theme.colors.black
+      fill: theme.colors.gray.gray100
     },
     labelStyle: {
       fill: theme.colors.white,
@@ -36,15 +36,20 @@ function layoutEdges(node: IPyssectNode) {
 }
 
 function layoutPositions(graph: IPyssectGraph) {
-  const children = [];
+  const children: ElkNode[] = [];
   const edges = [];
+  let ind = 0;
   for (let node of breadthFirstWalkGraph(graph)) {
     children.push({
       id: node.name,
-      width: 100,
+      width: 150,
       height: 100,
+      layoutOptions: {
+        partition: ind.toString(),
+      }
     });
-    edges.push(...layoutEdges(node))
+    edges.push(...layoutEdges(node));
+    ind += 1;
   }
 
   const elkGraph = {
@@ -60,6 +65,7 @@ function layoutPositions(graph: IPyssectGraph) {
     layoutOptions: {
 			algorithm: 'layered',
       'elk.direction': 'DOWN',
+      'partitioning.activate': 'true',
     }
   })
 }

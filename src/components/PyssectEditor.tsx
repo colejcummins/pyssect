@@ -15,11 +15,11 @@ const PyssectEditor = ({text}: {text: string}): JSX.Element => {
       style={{
         width: '30%',
         height: '100%',
-        backgroundColor: theme.colors.darkGray,
+        backgroundColor: theme.colors.gray.gray80,
       }}
     >
       <SyntaxHighlighter
-        customStyle={{ fontSize: '14px', padding: '5px', margin: '10px'}}
+        customStyle={{ fontSize: '14px', padding: '5px', margin: '10px', background: theme.colors.gray.gray80}}
         language="python"
         style={oneDark}
         showLineNumbers={true}

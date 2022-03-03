@@ -47,7 +47,7 @@ const PyssectNode = React.memo(({data}: {data: PyssectNodeProps}): JSX.Element =
   return (
     <div
       style={{
-        backgroundColor: theme.colors.darkGray,
+        backgroundColor: theme.colors.gray.gray80,
         display: 'flex',
         borderRadius: '4px',
       }}
@@ -55,7 +55,7 @@ const PyssectNode = React.memo(({data}: {data: PyssectNodeProps}): JSX.Element =
       {parents ? <Handles name={name} nodes={parents} position={Position.Top} /> : null}
       {contents && contents.length > 0 ? (
         <SyntaxHighlighter
-          customStyle={{ fontSize: '15px', padding: '5px', margin: '10px'}}
+          customStyle={{ fontSize: '15px', padding: '5px', margin: '10px', background: theme.colors.gray.gray80}}
           language="python"
           showLineNumbers={start ? true : false}
           startingLineNumber={start?.line ?? 1}

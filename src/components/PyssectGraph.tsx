@@ -19,7 +19,7 @@ const PyssectGraph: React.FC<IPyssectGraph> = props => {
   }, [fetchGraph]);
 
   return (
-    <div style={{width: '70%', height: '100%', backgroundColor: theme.colors.black}}>
+    <div style={{width: '70%', height: '100%', backgroundColor: theme.colors.gray.gray100}}>
       <ReactFlow
         onLoad={(instance) => instance.fitView()}
         elements={elements}
@@ -30,11 +30,11 @@ const PyssectGraph: React.FC<IPyssectGraph> = props => {
         snapGrid={[10, 10]}
       >
         <MiniMap
-          nodeColor={theme.colors.darkGray}
+          nodeColor={theme.colors.gray.gray80}
         />
         <Background
           variant={BackgroundVariant.Dots}
-          color={theme.colors.gray}
+          color={theme.colors.gray.gray60}
           gap={10}
           size={0.5}
         />
