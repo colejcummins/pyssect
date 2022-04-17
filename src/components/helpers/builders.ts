@@ -1,19 +1,75 @@
-import { ArrowHeadType, Edge, Elements } from 'react-flow-renderer';
-import ELK, {ElkEdge, ElkNode} from 'elkjs/lib/elk.bundled.js';
+import { ArrowHeadType, Edge } from 'react-flow-renderer';
+import ELK, {ElkNode} from 'elkjs/lib/elk.bundled.js';
 
-import { IPyssectGraph, IPyssectNode } from "../types";
-import { breadthFirstWalkGraph, depthFirstWalkGraph } from "./traverse";
+import { IPyssectGraph, IPyssectNode, FlatGraph, FlatEdge, ControlEvent } from "../types";
+import { breadthFirstWalkGraph } from "./traverse";
 import theme from "../../theme";
 
-function buildEdges(node: IPyssectNode): Edge[] {
-  return node.children ? Object.entries(node.children).map(([key, value]): Edge => ({
-    id: `${node.name}-${key}`,
-    source: node.name,
-    target: key,
+const layoutOptions = {
+  algorithm: 'layered',
+  'elk.direction': 'DOWN',
+  'partitioning.activate': 'true',
+  nodeSpacing: '10',
+}
+
+export function flattenEdges(node: IPyssectNode): FlatEdge[] {
+  return node.children ? Object.entries(node.children).map(([key, value]) => (
+    {
+      id: `${node.name}-${key}`,
+      source: node.name,
+      target: key,
+      transition: ControlEvent[value],
+    }
+  )): [];
+}
+
+export function flattenGraph(graph: IPyssectGraph): FlatGraph {
+  return Array.from(breadthFirstWalkGraph(graph)).flatMap((node, ind) => {
+    const {children, parents, ...flattened} = node;
+    return [
+      {...flattened, ind},
+      ...flattenEdges(node)
+    ]
+  });
+}
+
+function layoutPositions(graph: FlatGraph) {
+  const edges = [];
+  const children = [];
+  for (let node of graph) {
+    if ("ind" in node) {
+      children.push({
+        id: node.name,
+        // TODO - add more accurate dimensions
+        width: 150,
+        height: Math.max((node.contents.length * 30) + 30, 100),
+        layoutOptions: {
+          partition: node.ind.toString(),
+        }
+      });
+    } else {
+      const {transition, ...vals} = node;
+      edges.push({...vals})
+    }
+  }
+
+  return (new ELK()).layout({
+    id: 'root',
+    children: children,
+    edges: edges
+  }, {layoutOptions})
+}
+
+function buildEdge(edge: FlatEdge): Edge {
+  const {id, source, target, transition} = edge
+  return {
+    id,
+    source,
+    target,
     arrowHeadType: ArrowHeadType.ArrowClosed,
-    sourceHandle: `handle-${node.name}-${value.toString() || "default"}`,
-    targetHandle: `handle-${key}-${value.toString() || "default"}`,
-    label: value,
+    sourceHandle: `handle-${source}-${transition || "default"}`,
+    targetHandle: `handle-${target}-${transition || "default"}`,
+    label: transition,
     style: {
       stroke: theme.colors.white,
     },
@@ -24,68 +80,26 @@ function buildEdges(node: IPyssectNode): Edge[] {
       fill: theme.colors.white,
       fontSize: '12px'
     }
-  })) : [];
-}
-
-function layoutEdges(node: IPyssectNode) {
-  return node.children ? Object.entries(node.children).map(([key, _value]) => ({
-    id: `${node.name}-${key}`,
-    source: node.name,
-    target: key,
-  })) : []
-}
-
-function layoutPositions(graph: IPyssectGraph) {
-  const children: ElkNode[] = [];
-  const edges = [];
-  let ind = 0;
-  for (let node of breadthFirstWalkGraph(graph)) {
-    children.push({
-      id: node.name,
-      // TODO - add more accurate dimensions
-      width: 150,
-      height: Math.max((node.contents.length * 30) + 30, 100),
-      layoutOptions: {
-        partition: ind.toString(),
-      }
-    });
-    edges.push(...layoutEdges(node));
-    ind += 1;
   }
-
-  const elkGraph = {
-    id: 'root',
-    children: children,
-    edges: edges
-  }
-
-  return (new ELK()).layout(elkGraph, {
-    layoutOptions: {
-			algorithm: 'layered',
-      'elk.direction': 'DOWN',
-      'partitioning.activate': 'true',
-      nodeSpacing: '10',
-    }
-  })
 }
 
 export async function buildFlow(graph: IPyssectGraph) {
-  const positions = await layoutPositions(graph);
+  const flatGraph = flattenGraph(graph);
+  const positions = await layoutPositions(flatGraph);
   const children = Object.fromEntries(
     positions.children!.map(e => [e.id, {x: e.x!, y: e.y!}])
   );
 
-  return Array.from(breadthFirstWalkGraph(graph)).flatMap((node, ind) => {
-    return [
-        {
-          id: node.name,
-          type: 'pyssectNode',
-          data: {
-            node
-          },
-          position: { x: children[node.name].x, y: children[node.name].y }
-        }, ...buildEdges(node)
-      ]
+  return flatGraph.map((node) => {
+    if ("ind" in node) {
+      return {
+        id: node.name,
+        type: "pyssectNode",
+        data: {...node},
+        position: { x: children[node.name].x, y: children[node.name].y }
+      }
+    } else {
+      return buildEdge(node)
     }
-  )
+  })
 }

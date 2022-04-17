@@ -8,10 +8,6 @@ import oneDark from 'react-syntax-highlighter/dist/esm/styles/hljs/atom-one-dark
 import { ASTType, IPyssectNode, Location, ControlEvent } from './types';
 import theme from '../theme';
 
-interface PyssectNodeProps {
-  node: IPyssectNode
-}
-
 interface HandlesProps {
   name: string;
   nodes: Record<string, ControlEvent | string>;
@@ -39,8 +35,8 @@ const Handles = React.memo(({name, nodes, position}: HandlesProps): JSX.Element 
   );
 });
 
-const PyssectNode = React.memo(({data}: {data: PyssectNodeProps}): JSX.Element => {
-  const {start, type, contents, children, parents, name} = data.node;
+const PyssectNode = React.memo((props: IPyssectNode): JSX.Element => {
+  const {start, type, contents, children, parents, name} = props;
 
   SyntaxHighlighter.registerLanguage('python', python);
 

@@ -19,30 +19,6 @@ class ControlEvent(Enum):
   ONTRY = "try"
   PASS = ""
 
-
-class MarshalledASTType(Enum):
-  """Enum used to transmit python AST types to Pyssect frontend"""
-  If = "If"
-  While = "While"
-  For = "For"
-  Try = "Try"
-  Return = "Return"
-  Default = "Default"
-
-
-def ast_to_marshalled_ast(type: Type) -> MarshalledASTType:
-  if type in {ast.If, ast.IfExp}:
-    return MarshalledASTType.If
-  if type in {ast.For, ast.comprehension}:
-    return MarshalledASTType.For
-  if type in {ast.Return, ast.Yield, ast.YieldFrom}:
-    return MarshalledASTType.Return
-  if type == ast.Try:
-    return MarshalledASTType.Try
-  else:
-    return MarshalledASTType.Default
-
-
 @dataclass
 class Location:
   """A class that describes a single location in a file, with line and column fields.
@@ -72,12 +48,11 @@ class PyssectNode:
   """
   name: str = 'root'
   type: str = ''
-  marshalled_type: MarshalledASTType = field(default_factory=MarshalledASTType)
   start: Location = field(default_factory=Location)
   end: Location = field(default_factory=Location)
   parents: Dict[str, ControlEvent] = field(default_factory=dict)
   children: Dict[str, ControlEvent] = field(default_factory=dict)
-  contents: List[Any] = field(default_factory=list)
+  contents: List[str] = field(default_factory=list)
 
 
   def add_parent(self, node_name: str, event: ControlEvent) -> None:
@@ -113,7 +88,6 @@ class PyssectNode:
     if isinstance(contents, ast.AST):
       if len(self.contents) == 0:
         self.type = type(contents).__name__
-        self.marshalled_type = ast_to_marshalled_ast(type(contents))
       self.end = Location.default_end(contents)
     elif isinstance(contents, Instruction):
       self.end = contents.starts_line or 0

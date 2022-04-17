@@ -6,6 +6,7 @@ from typing import Any, Iterator, List, Dict, Union
 from inspect import getsource
 import dis
 import ast
+import pdb
 
 class ASTtoCFG(ast.NodeVisitor):
   """Class that extends the ast Node Visitor class, builds a PyssectGraph from an ast"""
@@ -24,6 +25,7 @@ class ASTtoCFG(ast.NodeVisitor):
 
   def build(self, node: ast.AST, do_clean: bool = False) -> Dict[str, PyssectGraph]:
     self._init_instances()
+    pdb.set_trace()
     cfg = PyssectGraph('__main__', nodes={'root': PyssectNode('root')})
     self.cfg_dict['__main__'] = cfg
     self.cfg = cfg
