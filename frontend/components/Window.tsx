@@ -4,7 +4,6 @@ import PyssectEditor from './PyssectEditor';
 import PyssectGraph from './PyssectGraph';
 
 const Window = () => {
-
   return (
     <div
       style={{

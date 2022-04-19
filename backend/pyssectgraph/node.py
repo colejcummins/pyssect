@@ -4,7 +4,6 @@ from enum import Enum
 from dis import Instruction
 import ast
 
-
 class ControlEvent(Enum):
   """Enum used to describe control flow events"""
   ONFALSE = "False"
@@ -32,11 +31,9 @@ class Location:
   def default_start(node: ast.AST):
     return Location(getattr(node, 'lineno', 1), getattr(node, 'col_offset', 0))
 
-
   @staticmethod
   def default_end(node: ast.AST):
     return Location(getattr(node, 'end_lineno', 1), getattr(node, 'end_col_offset', 0))
-
 
 @dataclass
 class PyssectNode:

@@ -4,7 +4,6 @@ from typing import Set, Dict
 import ast
 import json
 
-
 def pyssect_loads(str: str):
   """Takes in a JSON string and returns a corresponding Control Flow Graph, Node, or Location"""
 
@@ -20,7 +19,6 @@ def pyssect_loads(str: str):
 
   return json.loads(str, object_hook=_object_hook)
 
-
 def _ast_no_recurse(node: ast.AST) -> ast.AST:
   """Turns an AST node with nested nodes into a flattened node for string representation."""
   l = ast.Expr(value=ast.Ellipsis())
@@ -32,7 +30,6 @@ def _ast_no_recurse(node: ast.AST) -> ast.AST:
     node.__setattr__('finalbody', [l] if node.finalbody else [])
   return node
 
-
 def _try_no_recurse(node: ast.Try) -> ast.AST:
   l = ast.Expr(value=ast.Ellipsis())
   return ast.Try(
@@ -41,8 +38,6 @@ def _try_no_recurse(node: ast.Try) -> ast.AST:
     [l] if node.orelse else [],
     [l] if node.finalbody else []
   )
-
-
 
 def pyssect_dumps(obj, indent: int=2, simple: bool = False) -> str:
   """Returns a json string representation of the Control Flow Graph. Unparsing Control Flow Graphs only works in
