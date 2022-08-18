@@ -1,22 +1,20 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import ReactFlow, { Elements, MiniMap, Background, BackgroundVariant } from "react-flow-renderer";
 
-import { IPyssectGraph } from './types'
+import { IPyssectGraph } from '../lib/types'
 import PyssectNode from './PyssectNode';
-import { buildFlow } from './helpers/builders';
+import { buildFlow } from '../lib/builders';
 import theme from "../theme";
 
 const PyssectGraph = ({graph}: {graph: IPyssectGraph}): JSX.Element => {
   let [elements, setElements] = useState<Elements>([]);
 
-  const fetchGraph = useCallback(async () => {
-    let flow = await buildFlow(graph);
-    setElements(flow);
-  }, []);
-
   useEffect(() => {
-    fetchGraph();
-  }, [fetchGraph]);
+    const getGraph = async () => {
+      setElements(await buildFlow(graph));
+    }
+    getGraph();
+  }, [graph]);
 
   return (
     <div style={{width: '70%', height: '100%', backgroundColor: theme.colors.gray.gray100}}>

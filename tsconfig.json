@@ -23,5 +23,5 @@
   },
   "include": [
     "src"
-  ]
+, "frontend/components/theme.ts", "frontend/components/react-app-env.d.ts", "frontend/components/index.js", "frontend/components", "frontend/lib/types.ts"  ]
 }

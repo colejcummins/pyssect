@@ -1,4 +1,9 @@
 const theme = {
+  spacing: {
+    s5: '5px',
+    s10: '10px',
+    s20: '20px',
+  },
   colors: {
     gray: {
       gray100: '#191D24',
@@ -12,8 +17,15 @@ const theme = {
     yellow: '#e6c07b',
     brightYellow: '#f9c859',
     brightRed: '#ff6480',
+  },
+  fontSizes: {
+    small: '10px',
+    default: '12px',
+    large: '15px',
+  },
+  radii: {
+    default: '4px',
   }
-
 };
 
 export default theme;

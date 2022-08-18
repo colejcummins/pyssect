@@ -41,7 +41,7 @@ def _try_no_recurse(node: ast.Try) -> ast.AST:
 
 def pyssect_dumps(obj, indent: int=2, simple: bool = False) -> str:
   """Returns a json string representation of the Control Flow Graph. Unparsing Control Flow Graphs only works in
-  python 3.9.
+  python 3.9 and above.
   """
 
   def _default(obj):

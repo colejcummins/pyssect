@@ -1,0 +1,15 @@
+{
+  "defaultSeverity": "error",
+  "extends": ["tslint:latest", "tslint-config-prettier"],
+  "rules": {
+    "curly": [true, "ignore-same-line"],
+    "interface-name": false,
+    "no-submodule-imports": false,
+    "object-literal-sort-keys": false,
+    "prefer-conditional-expression": false,
+    "no-shadowed-variable": false
+  },
+  "linterOptions": {
+    "exclude": ["**/__generated__/**"]
+  }
+}
