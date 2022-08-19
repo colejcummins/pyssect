@@ -37,3 +37,19 @@ src
   contains python code for parsing, serializing, and traversing CFGs
 
 ```
+
+## TODO
+### FRONTEND
+
+* Make panel resizable
+* Add custom theme for syntax highlighting based on bluloco dark, change app theme accordingly
+* Have nodes provide detailed info
+* Make nodes selectable
+* Add state management for frontend (most likely zustand or mobx)
+
+
+### BACKEND
+* Create api
+* Create server
+* Implement custom pdb class for debugging
+* Connect server with debugger
