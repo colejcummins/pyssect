@@ -1,15 +1,12 @@
-from dataclasses import dataclass
 from types import CodeType, FrameType, FunctionType
 from graph import PyssectGraph
 from node import PyssectNode, Location, ControlEvent
-from typing import Any, Iterator, List, Dict, Union
+from typing import Any, List, Dict, Union
 from inspect import getsource
-import dis
 import ast
-import pdb
 
 class ASTtoCFG(ast.NodeVisitor):
-  """Class that extends the ast Node Visitor class, builds a PyssectGraph from an ast"""
+  """Class that extends the ast Node Visitor class, builds a PyssectGraph from an AST"""
   cfg_dict: Dict[str, PyssectGraph]
   cfg: PyssectGraph
   cur_event: ControlEvent
@@ -17,15 +14,12 @@ class ASTtoCFG(ast.NodeVisitor):
   headers: List[PyssectNode]
   exits: List[PyssectNode]
 
-
   def __init__(self):
     self._init_instances()
     super().__init__()
 
-
   def build(self, node: ast.AST, do_clean: bool = False) -> Dict[str, PyssectGraph]:
     self._init_instances()
-    pdb.set_trace()
     cfg = PyssectGraph('__main__', nodes={'root': PyssectNode('root')})
     self.cfg_dict['__main__'] = cfg
     self.cfg = cfg
@@ -39,11 +33,9 @@ class ASTtoCFG(ast.NodeVisitor):
 
     return self.cfg_dict
 
-
   def clean_graphs(self):
     for cfg in self.cfg_dict.values():
       cfg.clean_graph()
-
 
   def _init_instances(self):
     self.cur_event = ControlEvent.PASS
@@ -52,13 +44,11 @@ class ASTtoCFG(ast.NodeVisitor):
     self.headers = []
     self.exits = []
 
-
   def _visit_block(self, nodes: List[Union[ast.stmt, ast.expr]]) -> None:
     for node in nodes:
       if self.interrupting:
         break
       self.visit(node)
-
 
   def generic_visit(self, node: ast.AST) -> Any:
     if self.cur_event != ControlEvent.PASS:
@@ -69,10 +59,8 @@ class ASTtoCFG(ast.NodeVisitor):
     else:
       self.cfg.get_cur().append_contents(node)
 
-
   def visit_ClassDef(self, node: ast.ClassDef) -> Any:
     self._visit_block(node.body)
-
 
   def visit_FunctionDef(self, node: ast.FunctionDef) -> Any:
     saved = self.cfg.name
@@ -88,22 +76,17 @@ class ASTtoCFG(ast.NodeVisitor):
     self.cfg = self.cfg_dict[saved]
     self.interrupting = False
 
-
   def visit_Import(self, node: ast.Import) -> Any:
     pass
-
 
   def visit_ImportFrom(self, node: ast.ImportFrom) -> Any:
     pass
 
-
   def visit_While(self, node: ast.While) -> Any:
     self._visit_loop(node)
 
-
   def visit_For(self, node: ast.For) -> Any:
     self._visit_loop(node)
-
 
   def _visit_loop(self, node: Union[ast.For, ast.While]) -> Any:
     cfg_node = self._build_node(node)
@@ -127,7 +110,6 @@ class ASTtoCFG(ast.NodeVisitor):
     self.exits.pop()
     self.cur_event = ControlEvent.PASS
 
-
   def visit_If(self, node: ast.If) -> Any:
     cfg_node = self._build_node(node)
     exit_node = self._build_empty_node(f"exit_{cfg_node.name}", Location.default_end(node))
@@ -144,7 +126,6 @@ class ASTtoCFG(ast.NodeVisitor):
     self._add_exit(exit_node)
     self.cfg.go_to(exit_node.name)
     self.cur_event = ControlEvent.PASS
-
 
   def visit_Try(self, node: ast.Try) -> Any:
     cfg_node = self._build_node(node)
@@ -178,31 +159,25 @@ class ASTtoCFG(ast.NodeVisitor):
     self.cfg.attach_child(exit_node)
     self.cfg.go_to(exit_node.name)
 
-
   def visit_ExceptHandler(self, node: ast.ExceptHandler) -> Any:
     cfg_node = self._build_node(node)
     self.cfg.attach_child(cfg_node, ControlEvent.ONEXCEPTION)
     self._visit_block(node.body)
     self.cfg.go_to(cfg_node.name)
 
-
   def visit_Return(self, node: ast.Return) -> Any:
     self._visit_interrupts(node)
 
-
   def visit_Yield(self, node: ast.Yield) -> Any:
     self._visit_interrupts(node)
-
 
   def visit_YieldFrom(self, node: ast.YieldFrom) -> Any:
     # TODO implement yieldfrom
     self._visit_interrupts(node)
 
-
   def _visit_interrupts(self, node: ast.AST) -> Any:
     self.cfg.attach_child(self._build_node(node))
     self.interrupting = True
-
 
   def visit_Break(self, node: ast.Break) -> Any:
     cfg_node = self._build_node(node)
@@ -211,7 +186,6 @@ class ASTtoCFG(ast.NodeVisitor):
     self.cfg.attach_child(self.exits[-1], ControlEvent.ONBREAK)
     self.interrupting = True
 
-
   def visit_Continue(self, node: ast.Continue) -> Any:
     cfg_node = self._build_node(node)
     self.cfg.attach_child(cfg_node)
@@ -219,20 +193,17 @@ class ASTtoCFG(ast.NodeVisitor):
     self.cfg.attach_child(self.headers[-1], ControlEvent.ONCONTINUE)
     self.interrupting = True
 
-
   def _visit_body(self, node: ast.AST, exit: PyssectNode, parent_name: str):
     self.cur_event = ControlEvent.ONTRUE
     self._visit_block(node.body)
     self._add_exit(exit)
     self.cfg.go_to(parent_name)
 
-
   def _add_exit(self, exit_node: PyssectNode):
     if self.interrupting:
       self.interrupting = False
     else:
       self.cfg.attach_child(exit_node)
-
 
   def _build_node(self, node: ast.AST, name: str = '') -> PyssectNode:
     return PyssectNode(
@@ -242,37 +213,12 @@ class ASTtoCFG(ast.NodeVisitor):
       contents=[node]
     )
 
-
   def _build_empty_node(self,  name: str, location: Location) -> PyssectNode:
     return PyssectNode(name=name, start=location, end=location)
-
-
-@dataclass
-class CodetoCFG():
-  cfg: PyssectGraph
-
-  def build(self, code: CodeType) -> PyssectGraph:
-    self.cfg = PyssectGraph('test', 'root', 'root', {'root': PyssectNode('root')})
-    self._visit_code(dis.get_instructions(code))
-    return self.cfg
-
-  def _visit_block(self, block: Iterator[dis.Instruction]):
-    for instruction in block:
-      self.visit(instruction)
-
-
-  def generic_visit(self, inst: dis.Instruction):
-    self.cfg.get_cur().append_contents(inst)
-
-
-  def visit(self, inst: dis.Instruction):
-    getattr(self, f'visit_{inst.opname.lower()}', self.generic_visit)(inst)
-
 
 def builds(source: Union[str, CodeType, FrameType, FunctionType], do_clean: bool = False) -> Dict[str, PyssectGraph]:
   """Takes a python source object and returns the corresponding PyssectGraph"""
   return ASTtoCFG().build(ast.parse(source if isinstance(source, str) else getsource(source)), do_clean)
-
 
 def builds_file(file: str, do_clean: bool = False) -> Dict[str, PyssectGraph]:
   """Takes a python file and returns the corresponding PyssectGraph"""

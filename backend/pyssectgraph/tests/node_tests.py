@@ -59,7 +59,6 @@ class CFGTest(unittest.TestCase):
       'b': PyssectNode(name='b', parents={'a': ''})
     }), cfg)
 
-
   def test_insert_child(self):
     node_a = PyssectNode(name='a')
     node_b = PyssectNode(name='b')
@@ -79,7 +78,6 @@ class CFGTest(unittest.TestCase):
       'd': PyssectNode(name='d', parents={'b': ''})
     }), cfg)
 
-
   def test_merge_nodes(self):
     cfg = PyssectGraph('a', 'a', {
       'a': PyssectNode(name='a', children={'b': ''}, contents=['hello']),
@@ -97,7 +95,6 @@ class CFGTest(unittest.TestCase):
       'd': PyssectNode(name='d', parents={'a': ''})
     }), cfg)
 
-
   def test_to_json_str(self):
     cfg = PyssectGraph('test', 'a', 'a', {
         'a': PyssectNode(name='a', children={'b': ''}),
@@ -106,7 +103,6 @@ class CFGTest(unittest.TestCase):
 
     self.assertEqual(len(cfg.nodes), 2)
     self.assertEqual(JSON_CFG_OUT, pyssect_dumps(cfg))
-
 
 if __name__ == '__main__':
   unittest.main()

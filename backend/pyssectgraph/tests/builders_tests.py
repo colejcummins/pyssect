@@ -1,43 +1,34 @@
-from pyssectgraph import pyssect_dumps, builds
+from builders import builds
+from serializers import pyssect_dumps
 from typing import Dict, Any
 import json
-import ast
 import unittest
 
-
-class CFGBuilderTests(unittest.TestCase):
+class BuildersTests(unittest.TestCase):
   def __init__(self, *args, **kwargs):
-    super(CFGBuilderTests, self).__init__(*args, **kwargs)
+    super(BuildersTests, self).__init__(*args, **kwargs)
     self.maxDiff = None
-
 
   def test_small(self):
     self.assertEqual(SMALL_JSON, self._prog_to_json(SMALL))
 
-
   def test_basic_if(self):
     self.assertEqual(BASIC_IF_JSON, self._prog_to_json(BASIC_IF))
-
 
   def test_basic_return(self):
     self.assertEqual(BASIC_RETURN_JSON, self._prog_to_json(BASIC_RETURN))
 
-
   def test_if_and_return(self):
     self.assertEqual(IF_AND_RETURN_JSON, self._prog_to_json(IF_AND_RETURN))
-
 
   def test_basic_while(self):
     self.assertEqual(BASIC_WHILE_JSON, self._prog_to_json(BASIC_WHILE))
 
-
   def test_while_break_continue(self):
     self.assertEqual(WHILE_BREAK_CONTINUE_JSON, self._prog_to_json(WHILE_BREAK_CONTINUE))
 
-
   def _prog_to_json(self, prog: str) -> Dict[str, Any]:
-    return json.loads(pyssect_dumps(builds(prog), simple=True))['__main__']['nodes']
-
+    return json.loads(pyssect_dumps(builds(prog), pyssect_node_keys=['children', 'contents', 'parents']))['__main__']['nodes']
 
 SMALL = "x = 1"
 SMALL_JSON = {
@@ -49,8 +40,6 @@ SMALL_JSON = {
     "parents": {}
   }
 }
-
-
 
 BASIC_IF = """
 x = 1
@@ -103,8 +92,6 @@ BASIC_IF_JSON = {
   }
 }
 
-
-
 BASIC_RETURN = """
 x = 0
 return x
@@ -130,8 +117,6 @@ BASIC_RETURN_JSON = {
     }
   }
 }
-
-
 
 IF_AND_RETURN = """
 if x > 3:
@@ -219,8 +204,6 @@ IF_AND_RETURN_JSON = {
   }
 }
 
-
-
 BASIC_WHILE="""
 x = 1
 while x < 5:
@@ -271,8 +254,6 @@ BASIC_WHILE_JSON = {
     }
   }
 }
-
-
 
 WHILE_BREAK_CONTINUE ="""
 while x < 10:
@@ -395,15 +376,12 @@ WHILE_BREAK_CONTINUE_JSON = {
   }
 }
 
-
-
 BASIC_TRY = """
 try:
   x += 1
 except Exception as e:
   print(x)
 """
-
 
 TRY_WITH_FINALLY_ELSE = """
 try:
@@ -417,9 +395,6 @@ else:
 finally:
   print("finally")
 """
-
-
-
 
 if __name__ == '__main__':
   unittest.main()

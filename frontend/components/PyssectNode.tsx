@@ -39,7 +39,7 @@ const PyssectNode = React.memo((props: IPyssectNode): JSX.Element => {
     <div
       style={{
         display: 'flex',
-        backgroundColor: theme.colors.gray.gray80,
+        backgroundColor: theme.colors.gray[1],
         borderRadius: theme.radii.default,
       }}
     >

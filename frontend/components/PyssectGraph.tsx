@@ -17,7 +17,7 @@ const PyssectGraph = ({graph}: {graph: IPyssectGraph}): JSX.Element => {
   }, [graph]);
 
   return (
-    <div style={{width: '70%', height: '100%', backgroundColor: theme.colors.gray.gray100}}>
+    <div style={{width: '70%', height: '100%', backgroundColor: theme.colors.gray[0]}}>
       <ReactFlow
         onLoad={(instance) => instance.fitView()}
         elements={elements}
@@ -28,15 +28,15 @@ const PyssectGraph = ({graph}: {graph: IPyssectGraph}): JSX.Element => {
         snapGrid={[10, 10]}
       >
         <MiniMap
-          nodeColor={theme.colors.gray.gray60}
-          maskColor={`${theme.colors.gray.gray20}20`}
+          nodeColor={theme.colors.gray[1]}
+          maskColor={`${theme.colors.gray[2]}20`}
           style={{
-            background: theme.colors.gray.gray100,
+            background: theme.colors.gray[0],
           }}
         />
         <Background
           variant={BackgroundVariant.Dots}
-          color={theme.colors.gray.gray60}
+          color={theme.colors.gray[1]}
           gap={10}
           size={0.5}
         />

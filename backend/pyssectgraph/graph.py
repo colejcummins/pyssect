@@ -10,21 +10,17 @@ class PyssectGraph:
   cur: str = 'root'
   nodes: Dict[str, PyssectNode] = field(default_factory=dict)
 
-
   def next(self) -> None:
     """Sets the current node to an arbitrary child node"""
     self.cur = self.nodes[self.cur].next()
-
 
   def go_to(self, name: str) -> None:
     """Sets the current node to node name"""
     if name in self.nodes:
       self.cur = name
 
-
   def go_to_root(self) -> None:
     self.cur = self.root
-
 
   def attach_child(self, node: PyssectNode, event: ControlEvent = ControlEvent.PASS) -> None:
     """Add a child node to the current node"""
@@ -32,13 +28,11 @@ class PyssectGraph:
     self.nodes[self.cur].add_child(node.name, event)
     self.nodes[node.name].add_parent(self.cur, event)
 
-
   def attach_parent(self, node: PyssectNode, event: ControlEvent = ControlEvent.PASS) -> None:
     """Add a parent node to the current node"""
     self._conditional_add(node)
     self.nodes[self.cur].add_parent(node.name, event)
     self.nodes[node.name].add_child(self.cur, event)
-
 
   def insert_child(self, node: PyssectNode, event: ControlEvent = ControlEvent.PASS) -> None:
     """Inserts a child node to the current node, replacing node connections from the children to the new parent"""
@@ -56,11 +50,9 @@ class PyssectGraph:
     self.nodes[self.cur].children.clear()
     self.nodes[self.cur].add_child(node.name, ControlEvent.PASS)
 
-
   def _conditional_add(self, node: PyssectNode) -> None:
     if node.name not in self.nodes:
       self.nodes[node.name] = node
-
 
   def merge_nodes(self, parent: PyssectNode, child: PyssectNode) -> None:
     """Merges the two nodes parent and child, attaching all grandchild nodes to the new parent"""
@@ -75,16 +67,13 @@ class PyssectGraph:
     parent.remove_child(child)
     del self.nodes[child.name]
 
-
   def get_cur(self) -> PyssectNode:
     return self.nodes[self.cur]
-
 
   def iter_child_nodes(self):
     """Iterates through all child nodes of the current node"""
     for name in self.nodes[self.cur].children.keys():
       yield self.nodes[name]
-
 
   def walk(self):
     """Walks along a control flow graph starting with the current node, yielding all descendant nodes,
@@ -101,13 +90,11 @@ class PyssectGraph:
         yield node
         nodes.extend(self.iter_child_nodes())
 
-
   def clean_graph(self) -> None:
     self.go_to_root()
     for node in self.walk():
       if self._can_remove(node):
         self._remove_node()
-
 
   def _remove_node(self) -> None:
     """Removes the current node from the graph"""
@@ -123,7 +110,6 @@ class PyssectGraph:
 
     del self.nodes[self.cur]
     self.go_to_root()
-
 
   def _can_remove(self, node: PyssectNode) -> bool:
     return (

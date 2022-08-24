@@ -44,6 +44,8 @@ class PyssectNode:
   `'If_5_2'`.
   """
   name: str = 'root'
+  # TODO: implement unique ids for nodes to avoid possible key collisions
+  id: int = 0
   type: str = ''
   start: Location = field(default_factory=Location)
   end: Location = field(default_factory=Location)
@@ -51,33 +53,27 @@ class PyssectNode:
   children: Dict[str, ControlEvent] = field(default_factory=dict)
   contents: List[str] = field(default_factory=list)
 
-
   def add_parent(self, node_name: str, event: ControlEvent) -> None:
     """Add a node to the set of parents"""
     self.parents[node_name] = event
 
-
   def add_child(self, node_name: str, event: ControlEvent) -> None:
     """Add a node to the set of children"""
     self.children[node_name] = event
-
 
   def remove_child(self, node_name: str) -> None:
     """Remove a node from the set of children"""
     if node_name in self.children:
       del self.children[node_name]
 
-
   def remove_parent(self, node_name: str) -> None:
     """Remove a node from the set of parents"""
     if node_name in self.parents:
       del self.parents[node_name]
 
-
   def extend_contents(self, list: List[Any]) -> None:
     """Extend contents with a list of strings"""
     self.contents.extend(list)
-
 
   def append_contents(self, contents: Any) -> None:
     """Append anything to contents"""
@@ -89,10 +85,8 @@ class PyssectNode:
     elif isinstance(contents, Instruction):
       self.end = contents.starts_line or 0
 
-
   def next(self) -> str:
     """Returns the name of an arbitrary child node"""
     child = self.children.pop()
     self.children.add(child)
     return child
-

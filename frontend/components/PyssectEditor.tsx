@@ -10,7 +10,7 @@ const PyssectEditor = ({text}: {text: string}): JSX.Element => {
       style={{
         width: '30%',
         height: '100%',
-        backgroundColor: theme.colors.gray.gray80,
+        backgroundColor: theme.colors.gray[0],
       }}
     >
       <PythonHighlighter

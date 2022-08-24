@@ -285,17 +285,8 @@ def build_from_file(file_name: str, clean) -> Dict[str, PyssectGraph]:
     d = builds(prog, clean)
   return d
 
-
 def sum_lengths(cfg) -> int:
   return functools.reduce(lambda s, k_v: s + len(k_v[1].nodes), cfg.items(), 0)
 
-
-def main():
-  print(pyssect_dumps(builds(TRY_WITH_FINALLY_ELSE, True), simple=True))
-
 def is_user_function(name: str) -> bool:
   return name not in builtins.__dict__
-
-
-if __name__ == '__main__':
-  main()

@@ -28,6 +28,13 @@ export enum ASTType {
   Default
 }
 
+/**
+ * Represents a single Node in a Control Flow Graph, with a name, a `Location` start and end, a dictionary of parent
+ * and child nodes, and a list of contents.
+ *
+ * AST nodes follow a naming convention of `<AST class>_<start line>_<start column>`, for example
+ * `'If_5_2'`.
+ */
 export interface IPyssectNode {
   name: string;
   type?: ASTType;

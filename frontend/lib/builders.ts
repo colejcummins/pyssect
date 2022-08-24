@@ -85,7 +85,7 @@ function buildEdge(edge: FlatEdge): Edge {
       stroke: theme.colors.white,
     },
     labelBgStyle: {
-      fill: theme.colors.gray.gray100
+      fill: theme.colors.gray[0]
     },
     labelStyle: {
       fill: theme.colors.white,
@@ -101,16 +101,12 @@ export async function buildFlow(graph: IPyssectGraph) {
     positions.children!.map(e => [e.id, {x: e.x!, y: e.y!}])
   );
 
-  return flatGraph.map((node) => {
-    if ("ind" in node) {
-      return {
-        id: node.name,
-        type: "pyssectNode",
-        data: {...node},
-        position: { x: children[node.name].x, y: children[node.name].y }
-      }
-    } else {
-      return buildEdge(node)
-    }
-  })
+  return flatGraph.map((node) => (
+    "ind" in node ? ({
+      id: node.name,
+      type: "pyssectNode",
+      data: {...node},
+      position: { x: children[node.name].x, y: children[node.name].y }
+    }) : buildEdge(node)
+  ))
 }

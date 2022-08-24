@@ -7,7 +7,7 @@ function sortChildrenByEvent(a: [string, string | ControlEvent], b: [string, str
 }
 
 export function* walkChildNodes(node: IPyssectNode, graph: IPyssectGraph) {
-  for (const [key, _] of Object.entries(node.children).sort(sortChildrenByEvent)) {
+  for (const key of Object.entries(node.children).sort(sortChildrenByEvent).keys()) {
     yield graph.nodes[key]
   }
 }
