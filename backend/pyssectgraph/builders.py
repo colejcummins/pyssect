@@ -1,7 +1,8 @@
 from types import CodeType, FrameType, FunctionType
 from graph import PyssectGraph
 from node import PyssectNode, Location, ControlEvent
-from typing import Any, List, Dict, Union
+from typing import Any, Sequence, Dict, Union, List
+from uuid import uuid4, UUID
 from inspect import getsource
 import ast
 
@@ -9,8 +10,14 @@ class ASTtoCFG(ast.NodeVisitor):
   """Class that extends the ast Node Visitor class, builds a PyssectGraph from an AST"""
   cfg_dict: Dict[str, PyssectGraph]
   cfg: PyssectGraph
+
   cur_event: ControlEvent
+  # Used when the visitor encouters a statement that interrupts normal control flow
   interrupting: bool
+  # Used for when the visitor is exitting a control block
+  exitting: bool
+  # Used for creating dictionary names that do not cause collisions
+  identifier_names: List[str]
   headers: List[PyssectNode]
   exits: List[PyssectNode]
 
@@ -20,11 +27,12 @@ class ASTtoCFG(ast.NodeVisitor):
 
   def build(self, node: ast.AST, do_clean: bool = False) -> Dict[str, PyssectGraph]:
     self._init_instances()
-    cfg = PyssectGraph('__main__', nodes={'root': PyssectNode('root')})
+
+    cfg = PyssectGraph('__main__')
     self.cfg_dict['__main__'] = cfg
     self.cfg = cfg
     if hasattr(node, 'body'):
-      self._visit_block(node.body)
+      self._visit_block(node.body) # type: ignore We know the node has attribute body here
     else:
       self.visit(node)
 
@@ -43,8 +51,9 @@ class ASTtoCFG(ast.NodeVisitor):
     self.interrupting = False
     self.headers = []
     self.exits = []
+    self.identifier_names = []
 
-  def _visit_block(self, nodes: List[Union[ast.stmt, ast.expr]]) -> None:
+  def _visit_block(self, nodes: Sequence[Union[ast.stmt, ast.expr]]) -> None:
     for node in nodes:
       if self.interrupting:
         break
@@ -57,23 +66,31 @@ class ASTtoCFG(ast.NodeVisitor):
       self.cfg.go_to(cfg_node.name)
       self.cur_event = ControlEvent.PASS
     else:
-      self.cfg.get_cur().append_contents(node)
+      if not self.cfg.root:
+        cfg_node = self._build_node(node)
+        self.cfg.attach_child(cfg_node)
+      else:
+        self.cfg.get_cur().append_contents(node)
 
   def visit_ClassDef(self, node: ast.ClassDef) -> Any:
+    self.identifier_names.append(node.name)
     self._visit_block(node.body)
+    self.identifier_names.pop()
 
   def visit_FunctionDef(self, node: ast.FunctionDef) -> Any:
+    self.identifier_names.append(node.name)
     saved = self.cfg.name
     cfg_node = self._build_node(node)
     self.cfg.attach_child(cfg_node, self.cur_event)
     self.cfg.go_to(cfg_node.name)
-
-    new_cfg = PyssectGraph(node.name, nodes={'root': PyssectNode()})
-    self.cfg_dict[node.name] = new_cfg
+    new_graph_name = "_".join(self.identifier_names)
+    new_cfg = PyssectGraph(new_graph_name)
+    self.cfg_dict[new_graph_name] = new_cfg
     self.cfg = new_cfg
     self._visit_block(node.body)
 
     self.cfg = self.cfg_dict[saved]
+    self.identifier_names.pop()
     self.interrupting = False
 
   def visit_Import(self, node: ast.Import) -> Any:
@@ -97,11 +114,12 @@ class ASTtoCFG(ast.NodeVisitor):
     self.cfg.go_to(cfg_node.name)
 
     if node.body:
-      self._visit_body(node, cfg_node, cfg_node.name)
+      self.cur_event = ControlEvent.ONTRUE
+      self._visit_body(node.body, cfg_node, cfg_node.name)
 
     if node.orelse:
       self.cur_event = ControlEvent.ONFALSE
-      self._visit_block(node.orelse)
+      self._visit_body(node.orelse, cfg_node, cfg_node.name)
 
     self._add_exit(exit_node)
     self.cfg.go_to(exit_node.name)
@@ -117,20 +135,27 @@ class ASTtoCFG(ast.NodeVisitor):
     self.cfg.go_to(cfg_node.name)
 
     if node.body:
-      self._visit_body(node, exit_node, cfg_node.name)
+      self.cur_event = ControlEvent.ONTRUE
+      self._visit_body(node.body, exit_node, cfg_node.name)
 
     if node.orelse:
       self.cur_event = ControlEvent.ONFALSE
-      self._visit_block(node.orelse)
+      self._visit_body(node.orelse, exit_node, cfg_node.name)
 
     self._add_exit(exit_node)
     self.cfg.go_to(exit_node.name)
     self.cur_event = ControlEvent.PASS
 
+  def visit_TryStar(self, node: ast.TryStar):
+    self._visit_try_block(node)
+
   def visit_Try(self, node: ast.Try) -> Any:
+    self._visit_try_block(node)
+
+  def _visit_try_block(self, node: Union[ast.Try, ast.TryStar]):
     cfg_node = self._build_node(node)
     try_block = None
-    exit_parents: List[PyssectNode] = []
+    exit_parents: Sequence[PyssectNode] = []
     exit_node = self._build_empty_node(f"exit_{cfg_node.name}", Location.default_end(node))
     self.cfg.attach_child(cfg_node, self.cur_event)
     self.cfg.go_to(cfg_node.name)
@@ -193,9 +218,8 @@ class ASTtoCFG(ast.NodeVisitor):
     self.cfg.attach_child(self.headers[-1], ControlEvent.ONCONTINUE)
     self.interrupting = True
 
-  def _visit_body(self, node: ast.AST, exit: PyssectNode, parent_name: str):
-    self.cur_event = ControlEvent.ONTRUE
-    self._visit_block(node.body)
+  def _visit_body(self, node: Sequence[Union[ast.stmt, ast.expr]], exit: PyssectNode, parent_name: str):
+    self._visit_block(node)
     self._add_exit(exit)
     self.cfg.go_to(parent_name)
 
@@ -217,10 +241,10 @@ class ASTtoCFG(ast.NodeVisitor):
     return PyssectNode(name=name, start=location, end=location)
 
 def builds(source: Union[str, CodeType, FrameType, FunctionType], do_clean: bool = False) -> Dict[str, PyssectGraph]:
-  """Takes a python source object and returns the corresponding PyssectGraph"""
+  """Takes a python source object and returns the corresponding Dictionary of PyssectGraphs"""
   return ASTtoCFG().build(ast.parse(source if isinstance(source, str) else getsource(source)), do_clean)
 
 def builds_file(file: str, do_clean: bool = False) -> Dict[str, PyssectGraph]:
-  """Takes a python file and returns the corresponding PyssectGraph"""
+  """Takes a python file and returns the corresponding Dictionary of PyssectGraphs"""
   with open(file, 'r') as f:
     return ASTtoCFG().build(ast.parse(f.read()), do_clean)

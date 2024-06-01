@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List, Dict, Any, Type
+from typing import List, Dict, Any, Type, Iterator
 from enum import Enum
 from dis import Instruction
 import ast
@@ -40,24 +40,21 @@ class PyssectNode:
   """Represents a single Node in a Control Flow Graph, with a name, a `Location` start and end,
   a dictionary of parent and child nodes, and a list of contents.
 
-  AST nodes follow a naming convention of `<AST class>_<start line>_<start column>`, for example
+  Nodes follow a naming convention of `<AST class>_<start line>_<start column>`, for example
   `'If_5_2'`.
   """
   name: str = 'root'
-  # TODO: implement unique ids for nodes to avoid possible key collisions
-  id: int = 0
-  type: str = ''
   start: Location = field(default_factory=Location)
   end: Location = field(default_factory=Location)
   parents: Dict[str, ControlEvent] = field(default_factory=dict)
   children: Dict[str, ControlEvent] = field(default_factory=dict)
-  contents: List[str] = field(default_factory=list)
+  contents: List[Any] = field(default_factory=list)
 
-  def add_parent(self, node_name: str, event: ControlEvent) -> None:
+  def add_parent(self, node_name: str, event: ControlEvent = ControlEvent.PASS) -> None:
     """Add a node to the set of parents"""
     self.parents[node_name] = event
 
-  def add_child(self, node_name: str, event: ControlEvent) -> None:
+  def add_child(self, node_name: str, event: ControlEvent = ControlEvent.PASS) -> None:
     """Add a node to the set of children"""
     self.children[node_name] = event
 
@@ -79,14 +76,6 @@ class PyssectNode:
     """Append anything to contents"""
     self.contents.append(contents)
     if isinstance(contents, ast.AST):
-      if len(self.contents) == 0:
-        self.type = type(contents).__name__
       self.end = Location.default_end(contents)
     elif isinstance(contents, Instruction):
-      self.end = contents.starts_line or 0
-
-  def next(self) -> str:
-    """Returns the name of an arbitrary child node"""
-    child = self.children.pop()
-    self.children.add(child)
-    return child
+      self.end = Location(contents.starts_line or 1)

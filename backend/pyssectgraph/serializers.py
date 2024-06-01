@@ -21,7 +21,7 @@ def pyssect_loads(str: str):
 
 def _flatten_ast_node(node: ast.AST) -> ast.AST:
   """Turns an AST node with nested nodes into a flattened node for string representation."""
-  l = ast.Expr(value=ast.Ellipsis())
+  l = ast.Expr(ast.Constant('...'))
 
   if isinstance(node, ast.Try):
     flat_handlers = [ast.ExceptHandler(name=handler.name, type=handler.type, body=[l]) for handler in node.handlers]
@@ -35,24 +35,20 @@ def _flatten_ast_node(node: ast.AST) -> ast.AST:
     node.__setattr__('finalbody', [l])
   return node
 
-def pyssect_dumps(obj, indent:int=2, pyssect_node_keys: List[str]=[]) -> str:
-  """Returns a json string representation of the Control Flow Graph. ast.unparse only works in python 3.9 and above.
-
-  If `pyssect_node_keys` is set to anything but an empty array, `pyssect_dumps` will include only the keys specified
-  when serializing a `PyssectNode`
+def pyssect_dumps(obj, indent:int=2) -> str:
+  """
+  Returns a json string representation of the Control Flow Graph. ast.unparse only works in python 3.9 and above.
   """
 
   def _default(obj):
     if type(obj) in [PyssectNode, PyssectGraph, Location]:
-      if isinstance(obj, PyssectNode) and pyssect_node_keys:
-        return {key: obj[key] for key in pyssect_node_keys}
       return obj.__dict__
     if isinstance(obj, Set):
       return list(obj)
     if isinstance(obj, ControlEvent):
       return obj.value
     if isinstance(obj, ast.AST):
-      return ast.unparse(_flatten_ast_node(obj)).split('\n')
-    return json.JSONEncoder.default(obj)
+      return ast.unparse(_flatten_ast_node(obj))
+    return json.JSONEncoder().default(obj)
 
   return json.dumps(obj, default=_default, indent=indent)

@@ -9,7 +9,9 @@ import functools
 from types import BuiltinFunctionType
 import types
 from typing import Dict
-from pyssectgraph import builds, PyssectGraph, pyssect_dumps
+from builders import builds
+from graph import PyssectGraph
+from serializers import pyssect_dumps
 import json
 
 PROGRAM = """

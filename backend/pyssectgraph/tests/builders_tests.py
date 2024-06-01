@@ -10,30 +10,46 @@ class BuildersTests(unittest.TestCase):
     self.maxDiff = None
 
   def test_small(self):
-    self.assertEqual(SMALL_JSON, self._prog_to_json(SMALL))
+    self.assertEqual(SMALL_JSON, self._prog_to_json(SMALL)['__main__']['nodes'])
 
   def test_basic_if(self):
-    self.assertEqual(BASIC_IF_JSON, self._prog_to_json(BASIC_IF))
+    self.assertEqual(BASIC_IF_JSON, self._prog_to_json(BASIC_IF)['__main__']['nodes'])
 
   def test_basic_return(self):
-    self.assertEqual(BASIC_RETURN_JSON, self._prog_to_json(BASIC_RETURN))
+    self.assertEqual(BASIC_RETURN_JSON, self._prog_to_json(BASIC_RETURN)['__main__']['nodes'])
 
   def test_if_and_return(self):
-    self.assertEqual(IF_AND_RETURN_JSON, self._prog_to_json(IF_AND_RETURN))
+    self.assertEqual(IF_AND_RETURN_JSON, self._prog_to_json(IF_AND_RETURN)['__main__']['nodes'])
 
   def test_basic_while(self):
-    self.assertEqual(BASIC_WHILE_JSON, self._prog_to_json(BASIC_WHILE))
+    self.assertEqual(BASIC_WHILE_JSON, self._prog_to_json(BASIC_WHILE)['__main__']['nodes'])
 
   def test_while_break_continue(self):
-    self.assertEqual(WHILE_BREAK_CONTINUE_JSON, self._prog_to_json(WHILE_BREAK_CONTINUE))
+    self.assertEqual(WHILE_BREAK_CONTINUE_JSON, self._prog_to_json(WHILE_BREAK_CONTINUE)['__main__']['nodes'])
+
+  def test_basic_try(self):
+    self.assertEqual({}, self._prog_to_json(BASIC_TRY)['__main__']['nodes'])
+
+  def test_function_and_class_collisions(self):
+    self.assertEqual(FUNCTION_AND_CLASS_COLLISIONS_JSON, self._prog_to_json(FUNCTION_AND_CLASS_COLLISIONS))
 
   def _prog_to_json(self, prog: str) -> Dict[str, Any]:
-    return json.loads(pyssect_dumps(builds(prog), pyssect_node_keys=['children', 'contents', 'parents']))['__main__']['nodes']
+    # print(pyssect_dumps(builds(prog, True)))
+    return json.loads(pyssect_dumps(builds(prog, True)))
 
 SMALL = "x = 1"
 SMALL_JSON = {
   "root": {
+    "name": "root",
     "children": {},
+    "start": {
+      "line": 1,
+      "column": 0,
+    },
+    "end": {
+      "line": 1,
+      "column": 5,
+    },
     "contents": [
       "x = 1"
     ],
@@ -41,14 +57,22 @@ SMALL_JSON = {
   }
 }
 
-BASIC_IF = """
-x = 1
+BASIC_IF = """x = 1
 if x < 4:
   x += 2
 x -= 1
 """
 BASIC_IF_JSON = {
   "root": {
+    "name": "root",
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 1,
+      "column": 5,
+    },
     "contents": [
       "x = 1"
     ],
@@ -57,43 +81,65 @@ BASIC_IF_JSON = {
     },
     "parents": {}
   },
-  "If_3_0": {
+  "If_2_0": {
+    "name": "If_2_0",
+    "start": {
+      "line": 2,
+      "column": 0
+    },
+    "end": {
+      "line": 3,
+      "column": 8,
+    },
     "contents": [
       "if x < 4:\n    ..."
     ],
     "children": {
-      "AugAssign_4_2": "True",
-      "exit_If_3_0": ""
+      "AugAssign_3_2": "True",
+      "exit_If_2_0": ""
     },
     "parents": {
       "root": ""
     }
   },
-  "AugAssign_4_2": {
+  "AugAssign_3_2": {
+    "name": "AugAssign_3_2",
+    "start": {
+      "line": 3,
+      "column": 2,
+    },
+    "end": {
+      "line": 3,
+      "column": 8,
+    },
     "contents": [
       "x += 2"
     ],
     "children": {
-      "exit_If_3_0": ""
+      "exit_If_2_0": ""
     },
     "parents": {
-      "If_3_0": "True"
+      "If_2_0": "True"
     }
   },
-  "exit_If_3_0": {
+  "exit_If_2_0": {
+    "name": "exit_If_2_0",
+    "start": {
+      "line": 4,
+      "column": 0,
+    },
     "contents": [
       "x -= 1"
     ],
     "children": {},
     "parents": {
-      "AugAssign_4_2": "",
-      "If_3_0": ""
+      "AugAssign_3_2": "",
+      "If_2_0": ""
     }
   }
 }
 
-BASIC_RETURN = """
-x = 0
+BASIC_RETURN = """x = 0
 return x
 x += 1
 """
@@ -376,10 +422,9 @@ WHILE_BREAK_CONTINUE_JSON = {
   }
 }
 
-BASIC_TRY = """
-try:
+BASIC_TRY = """try:
   x += 1
-except Exception as e:
+except ArithmeticError as e:
   print(x)
 """
 
@@ -395,6 +440,223 @@ else:
 finally:
   print("finally")
 """
+
+FUNCTION_AND_CLASS_COLLISIONS = """class Foo():
+  def nice(self):
+    print(1)
+
+def bar():
+  def baz():
+    def nice():
+      print(2)
+
+def foo_bar():
+  def nice():
+    print(3)
+"""
+FUNCTION_AND_CLASS_COLLISIONS_JSON = {
+  "__main__": {
+    "name": "__main__",
+    "root": "FunctionDef_2_2",
+    "cur": "FunctionDef_10_0",
+    "nodes": {
+      "FunctionDef_2_2": {
+        "name": "FunctionDef_2_2",
+        "start": {
+          "line": 2,
+          "column": 2
+        },
+        "end": {
+          "line": 3,
+          "column": 12
+        },
+        "parents": {},
+        "children": {
+          "FunctionDef_5_0": ""
+        },
+        "contents": [
+          "def nice(self):\n    \"\"\"...\"\"\""
+        ]
+      },
+      "FunctionDef_5_0": {
+        "name": "FunctionDef_5_0",
+        "start": {
+          "line": 5,
+          "column": 0
+        },
+        "end": {
+          "line": 8,
+          "column": 14
+        },
+        "parents": {
+          "FunctionDef_2_2": ""
+        },
+        "children": {
+          "FunctionDef_10_0": ""
+        },
+        "contents": [
+          "def bar():\n    \"\"\"...\"\"\""
+        ]
+      },
+      "FunctionDef_10_0": {
+        "name": "FunctionDef_10_0",
+        "start": {
+          "line": 10,
+          "column": 0
+        },
+        "end": {
+          "line": 12,
+          "column": 12
+        },
+        "parents": {
+          "FunctionDef_5_0": ""
+        },
+        "children": {},
+        "contents": [
+          "def foo_bar():\n    \"\"\"...\"\"\""
+        ]
+      }
+    }
+  },
+  "Foo_nice": {
+    "name": "Foo_nice",
+    "root": "Expr_3_4",
+    "cur": "Expr_3_4",
+    "nodes": {
+      "Expr_3_4": {
+        "name": "Expr_3_4",
+        "start": {
+          "line": 3,
+          "column": 4
+        },
+        "end": {
+          "line": 3,
+          "column": 12
+        },
+        "parents": {},
+        "children": {},
+        "contents": [
+          "print(1)"
+        ]
+      }
+    }
+  },
+  "bar": {
+    "name": "bar",
+    "root": "FunctionDef_6_2",
+    "cur": "FunctionDef_6_2",
+    "nodes": {
+      "FunctionDef_6_2": {
+        "name": "FunctionDef_6_2",
+        "start": {
+          "line": 6,
+          "column": 2
+        },
+        "end": {
+          "line": 8,
+          "column": 14
+        },
+        "parents": {},
+        "children": {},
+        "contents": [
+          "def baz():\n    \"\"\"...\"\"\""
+        ]
+      }
+    }
+  },
+  "bar_baz": {
+    "name": "bar_baz",
+    "root": "FunctionDef_7_4",
+    "cur": "FunctionDef_7_4",
+    "nodes": {
+      "FunctionDef_7_4": {
+        "name": "FunctionDef_7_4",
+        "start": {
+          "line": 7,
+          "column": 4
+        },
+        "end": {
+          "line": 8,
+          "column": 14
+        },
+        "parents": {},
+        "children": {},
+        "contents": [
+          "def nice():\n    \"\"\"...\"\"\""
+        ]
+      }
+    }
+  },
+  "bar_baz_nice": {
+    "name": "bar_baz_nice",
+    "root": "Expr_8_6",
+    "cur": "Expr_8_6",
+    "nodes": {
+      "Expr_8_6": {
+        "name": "Expr_8_6",
+        "start": {
+          "line": 8,
+          "column": 6
+        },
+        "end": {
+          "line": 8,
+          "column": 14
+        },
+        "parents": {},
+        "children": {},
+        "contents": [
+          "print(2)"
+        ]
+      }
+    }
+  },
+  "foo_bar": {
+    "name": "foo_bar",
+    "root": "FunctionDef_11_2",
+    "cur": "FunctionDef_11_2",
+    "nodes": {
+      "FunctionDef_11_2": {
+        "name": "FunctionDef_11_2",
+        "start": {
+          "line": 11,
+          "column": 2
+        },
+        "end": {
+          "line": 12,
+          "column": 12
+        },
+        "parents": {},
+        "children": {},
+        "contents": [
+          "def nice():\n    \"\"\"...\"\"\""
+        ]
+      }
+    }
+  },
+  "foo_bar_nice": {
+    "name": "foo_bar_nice",
+    "root": "Expr_12_4",
+    "cur": "Expr_12_4",
+    "nodes": {
+      "Expr_12_4": {
+        "name": "Expr_12_4",
+        "start": {
+          "line": 12,
+          "column": 4
+        },
+        "end": {
+          "line": 12,
+          "column": 12
+        },
+        "parents": {},
+        "children": {},
+        "contents": [
+          "print(3)"
+        ]
+      }
+    }
+  }
+}
 
 if __name__ == '__main__':
   unittest.main()
