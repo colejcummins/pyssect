@@ -28,19 +28,21 @@ class BuildersTests(unittest.TestCase):
     self.assertEqual(WHILE_BREAK_CONTINUE_JSON, self._prog_to_json(WHILE_BREAK_CONTINUE)['__main__']['nodes'])
 
   def test_basic_try(self):
-    self.assertEqual({}, self._prog_to_json(BASIC_TRY)['__main__']['nodes'])
+    self.assertEqual(BASIC_TRY_JSON, self._prog_to_json(BASIC_TRY, False)['__main__']['nodes'])
+
+  def test_try_with_finally_else(self):
+    self.assertEqual(TRY_WITH_FINALLY_ELSE_JSON, self._prog_to_json(TRY_WITH_FINALLY_ELSE, False)['__main__']['nodes'])
 
   def test_function_and_class_collisions(self):
     self.assertEqual(FUNCTION_AND_CLASS_COLLISIONS_JSON, self._prog_to_json(FUNCTION_AND_CLASS_COLLISIONS))
 
-  def _prog_to_json(self, prog: str) -> Dict[str, Any]:
-    # print(pyssect_dumps(builds(prog, True)))
-    return json.loads(pyssect_dumps(builds(prog, True)))
+  def _prog_to_json(self, prog: str, clean:bool = True) -> Dict[str, Any]:
+    return json.loads(pyssect_dumps(builds(prog, clean)))
 
 SMALL = "x = 1"
 SMALL_JSON = {
-  "root": {
-    "name": "root",
+  "Assign_1_0": {
+    "name": "Assign_1_0",
     "children": {},
     "start": {
       "line": 1,
@@ -63,8 +65,8 @@ if x < 4:
 x -= 1
 """
 BASIC_IF_JSON = {
-  "root": {
-    "name": "root",
+  "Assign_1_0": {
+    "name": "Assign_1_0",
     "start": {
       "line": 1,
       "column": 0
@@ -77,7 +79,7 @@ BASIC_IF_JSON = {
       "x = 1"
     ],
     "children": {
-      "If_3_0": ""
+      "If_2_0": ""
     },
     "parents": {}
   },
@@ -99,7 +101,7 @@ BASIC_IF_JSON = {
       "exit_If_2_0": ""
     },
     "parents": {
-      "root": ""
+      "Assign_1_0": ""
     }
   },
   "AugAssign_3_2": {
@@ -125,8 +127,12 @@ BASIC_IF_JSON = {
   "exit_If_2_0": {
     "name": "exit_If_2_0",
     "start": {
+      "line": 3,
+      "column": 8,
+    },
+    "end": {
       "line": 4,
-      "column": 0,
+      "column": 6
     },
     "contents": [
       "x -= 1"
@@ -144,165 +150,234 @@ return x
 x += 1
 """
 BASIC_RETURN_JSON = {
-  "root": {
+  "Assign_1_0": {
+    "name": "Assign_1_0",
+    "start": {
+      "line": 1,
+      "column": 0,
+    },
+    "end": {
+      "line": 1,
+      "column": 5
+    },
     "contents": [
       "x = 0"
     ],
     "children": {
-      "Return_3_0": ""
+      "Return_2_0": ""
     },
     "parents": {}
   },
-  "Return_3_0": {
+  "Return_2_0": {
+    "name": "Return_2_0",
+    "start": {
+      "line": 2,
+      "column": 0,
+    },
+    "end": {
+      "line": 2,
+      "column": 8
+    },
     "contents": [
       "return x"
     ],
     "children": {},
     "parents": {
-      "root": ""
+      "Assign_1_0": ""
     }
   }
 }
 
-IF_AND_RETURN = """
-if x > 3:
+IF_AND_RETURN = """if x > 3:
   if x < 2:
     return 0
   return 1
 return 2
 """
 IF_AND_RETURN_JSON = {
-  "root": {
-    "contents": [],
-    "children": {
-      "If_2_0": ""
+  "If_1_0": {
+    "name": "If_1_0",
+    "start": {
+      "line": 1,
+      "column": 0
     },
-    "parents": {}
-  },
-  "If_2_0": {
+    "end": {
+      "line": 4,
+      "column": 10
+    },
+    "parents": {},
+    "children": {
+      "If_2_2": "True",
+      "Return_5_0": ""
+    },
     "contents": [
       "if x > 3:\n    ..."
-    ],
-    "children": {
-      "If_3_2": "True",
-      "exit_If_2_0": ""
+    ]
+  },
+  "If_2_2": {
+    "name": "If_2_2",
+    "start": {
+      "line": 2,
+      "column": 2
+    },
+    "end": {
+      "line": 3,
+      "column": 12
     },
     "parents": {
-      "root": ""
-    }
-  },
-  "If_3_2": {
+      "If_1_0": "True"
+    },
+    "children": {
+      "Return_3_4": "True",
+      "Return_4_2": ""
+    },
     "contents": [
       "if x < 2:\n    ..."
-    ],
-    "children": {
-      "Return_4_4": "",
-      "exit_If_3_2": ""
+    ]
+  },
+  "Return_3_4": {
+    "name": "Return_3_4",
+    "start": {
+      "line": 3,
+      "column": 4
+    },
+    "end": {
+      "line": 3,
+      "column": 12
     },
     "parents": {
-      "If_2_0": "True"
-    }
-  },
-  "Return_4_4": {
+      "If_2_2": "True"
+    },
+    "children": {},
     "contents": [
       "return 0"
-    ],
-    "children": {},
-    "parents": {
-      "If_3_2": ""
-    }
+    ]
   },
-  "exit_If_3_2": {
-    "contents": [],
-    "children": {
-      "Return_5_2": ""
+  "Return_4_2": {
+    "name": "Return_4_2",
+    "start": {
+      "line": 4,
+      "column": 2
+    },
+    "end": {
+      "line": 4,
+      "column": 10
     },
     "parents": {
-      "If_3_2": ""
-    }
-  },
-  "Return_5_2": {
+      "If_2_2": ""
+    },
+    "children": {},
     "contents": [
       "return 1"
-    ],
-    "children": {},
-    "parents": {
-      "exit_If_3_2": ""
-    }
+    ]
   },
-  "exit_If_2_0": {
-    "contents": [],
-    "children": {
-      "Return_6_0": ""
+  "Return_5_0": {
+    "name": "Return_5_0",
+    "start": {
+      "line": 5,
+      "column": 0
+    },
+    "end": {
+      "line": 5,
+      "column": 8
     },
     "parents": {
-      "If_2_0": ""
-    }
-  },
-  "Return_6_0": {
+      "If_1_0": ""
+    },
+    "children": {},
     "contents": [
       "return 2"
-    ],
-    "children": {},
-    "parents": {
-      "exit_If_2_0": ""
-    }
+    ]
   }
 }
 
-BASIC_WHILE="""
-x = 1
+BASIC_WHILE="""x = 1
 while x < 5:
   x += 1
 x = 2
 """
 BASIC_WHILE_JSON = {
-  "root": {
+  "Assign_1_0": {
+    "name": "Assign_1_0",
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 1,
+      "column": 5
+    },
+    "parents": {},
+    "children": {
+      "While_2_0": ""
+    },
     "contents": [
       "x = 1"
-    ],
-    "children": {
-      "While_3_0": ""
-    },
-    "parents": {}
+    ]
   },
-  "While_3_0": {
+  "While_2_0": {
+    "name": "While_2_0",
+    "start": {
+      "line": 2,
+      "column": 0
+    },
+    "end": {
+      "line": 3,
+      "column": 8
+    },
+    "parents": {
+      "Assign_1_0": "",
+      "AugAssign_3_2": ""
+    },
+    "children": {
+      "AugAssign_3_2": "True",
+      "exit_While_2_0": ""
+    },
     "contents": [
       "while x < 5:\n    ..."
-    ],
-    "children": {
-      "AugAssign_4_2": "True",
-      "exit_While_3_0": ""
+    ]
+  },
+  "AugAssign_3_2": {
+    "name": "AugAssign_3_2",
+    "start": {
+      "line": 3,
+      "column": 2
+    },
+    "end": {
+      "line": 3,
+      "column": 8
     },
     "parents": {
-      "root": "",
-      "AugAssign_4_2": ""
-    }
-  },
-  "AugAssign_4_2": {
+      "While_2_0": "True"
+    },
+    "children": {
+      "While_2_0": ""
+    },
     "contents": [
       "x += 1"
-    ],
-    "children": {
-      "While_3_0": ""
+    ]
+  },
+  "exit_While_2_0": {
+    "name": "exit_While_2_0",
+    "start": {
+      "line": 3,
+      "column": 8
+    },
+    "end": {
+      "line": 4,
+      "column": 5
     },
     "parents": {
-      "While_3_0": "True"
-    }
-  },
-  "exit_While_3_0": {
+      "While_2_0": ""
+    },
+    "children": {},
     "contents": [
       "x = 2"
-    ],
-    "children": {},
-    "parents": {
-      "While_3_0": ""
-    }
+    ]
   }
 }
 
-WHILE_BREAK_CONTINUE ="""
-while x < 10:
+WHILE_BREAK_CONTINUE ="""while x < 10:
   if x == 5:
     continue
   if x == 1:
@@ -312,113 +387,168 @@ while x < 10:
 x += 2
 """
 WHILE_BREAK_CONTINUE_JSON = {
-  "root": {
-    "contents": [],
-    "children": {
-      "While_2_0": ""
+  "While_1_0": {
+    "name": "While_1_0",
+    "start": {
+      "line": 1,
+      "column": 0
     },
-    "parents": {}
-  },
-  "While_2_0": {
+    "end": {
+      "line": 7,
+      "column": 8
+    },
+    "parents": {
+      "Continue_3_4": "continue",
+      "exit_If_4_2": ""
+    },
+    "children": {
+      "If_2_2": "True",
+      "exit_While_1_0": ""
+    },
     "contents": [
       "while x < 10:\n    ..."
-    ],
-    "children": {
-      "If_3_2": "True",
-      "exit_While_2_0": ""
+    ]
+  },
+  "If_2_2": {
+    "name": "If_2_2",
+    "start": {
+      "line": 2,
+      "column": 2
+    },
+    "end": {
+      "line": 3,
+      "column": 12
     },
     "parents": {
-      "root": "",
-      "Continue_4_4": "continue",
-      "exit_If_5_2": ""
-    }
-  },
-  "If_3_2": {
+      "While_1_0": "True"
+    },
+    "children": {
+      "Continue_3_4": "",
+      "If_4_2": ""
+    },
     "contents": [
       "if x == 5:\n    ..."
-    ],
-    "children": {
-      "Continue_4_4": "",
-      "exit_If_3_2": ""
+    ]
+  },
+  "Continue_3_4": {
+    "name": "Continue_3_4",
+    "start": {
+      "line": 3,
+      "column": 4
+    },
+    "end": {
+      "line": 3,
+      "column": 12
     },
     "parents": {
-      "While_2_0": ""
-    }
-  },
-  "Continue_4_4": {
+      "If_2_2": ""
+    },
+    "children": {
+      "While_1_0": "continue"
+    },
     "contents": [
       "continue"
-    ],
-    "children": {
-      "While_2_0": "continue"
+    ]
+  },
+  "If_4_2": {
+    "name": "If_4_2",
+    "start": {
+      "line": 4,
+      "column": 2
+    },
+    "end": {
+      "line": 6,
+      "column": 9
     },
     "parents": {
-      "If_3_2": ""
-    }
-  },
-  "exit_If_3_2": {
-    "contents": [],
-    "children": {
-      "If_5_2": ""
+      "If_2_2": ""
     },
-    "parents": {
-      "If_3_2": ""
-    }
-  },
-  "If_5_2": {
+    "children": {
+      "AugAssign_5_4": "True",
+      "exit_If_4_2": ""
+    },
     "contents": [
       "if x == 1:\n    ..."
-    ],
-    "children": {
-      "AugAssign_6_4": "True",
-      "exit_If_5_2": ""
+    ]
+  },
+  "AugAssign_5_4": {
+    "name": "AugAssign_5_4",
+    "start": {
+      "line": 5,
+      "column": 4
+    },
+    "end": {
+      "line": 5,
+      "column": 10
     },
     "parents": {
-      "exit_If_3_2": ""
-    }
-  },
-  "AugAssign_6_4": {
+      "If_4_2": "True"
+    },
+    "children": {
+      "Break_6_4": ""
+    },
     "contents": [
       "x += 2"
-    ],
-    "children": {
-      "Break_7_4": ""
+    ]
+  },
+  "Break_6_4": {
+    "name": "Break_6_4",
+    "start": {
+      "line": 6,
+      "column": 4
+    },
+    "end": {
+      "line": 6,
+      "column": 9
     },
     "parents": {
-      "If_5_2": "True"
-    }
-  },
-  "Break_7_4": {
+      "AugAssign_5_4": ""
+    },
+    "children": {
+      "exit_While_1_0": "break"
+    },
     "contents": [
       "break"
-    ],
-    "children": {
-      "exit_While_2_0": "break"
+    ]
+  },
+  "exit_While_1_0": {
+    "name": "exit_While_1_0",
+    "start": {
+      "line": 7,
+      "column": 8
+    },
+    "end": {
+      "line": 8,
+      "column": 6
     },
     "parents": {
-      "AugAssign_6_4": ""
-    }
-  },
-  "exit_While_2_0": {
+      "Break_6_4": "break",
+      "While_1_0": ""
+    },
+    "children": {},
     "contents": [
       "x += 2"
-    ],
-    "children": {},
-    "parents": {
-      "Break_7_4": "break",
-      "While_2_0": ""
-    }
+    ]
   },
-  "exit_If_5_2": {
-    "contents": [
-      "x += 1"
-    ],
-    "children": {
-      "While_2_0": ""
+  "exit_If_4_2": {
+    "name": "exit_If_4_2",
+    "start": {
+      "line": 6,
+      "column": 9
+    },
+    "end": {
+      "line": 7,
+      "column": 8
     },
     "parents": {
-      "If_5_2": ""
-    }
+      "If_4_2": ""
+    },
+    "children": {
+      "While_1_0": ""
+    },
+    "contents": [
+      "x += 1"
+    ]
   }
 }
 
@@ -427,9 +557,86 @@ BASIC_TRY = """try:
 except ArithmeticError as e:
   print(x)
 """
+BASIC_TRY_JSON = {
+  "Try_1_0": {
+    "name": "Try_1_0",
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 4,
+      "column": 10
+    },
+    "parents": {},
+    "children": {
+      "AugAssign_2_2": "try"
+    },
+    "contents": [
+      "try:\n    ...\nexcept ArithmeticError as e:\n    ..."
+    ]
+  },
+  "AugAssign_2_2": {
+    "name": "AugAssign_2_2",
+    "start": {
+      "line": 2,
+      "column": 2
+    },
+    "end": {
+      "line": 2,
+      "column": 8
+    },
+    "parents": {
+      "Try_1_0": "try"
+    },
+    "children": {
+      "Expr_4_2": "excepts",
+      "exit_Try_1_0": ""
+    },
+    "contents": [
+      "x += 1"
+    ]
+  },
+  "Expr_4_2": {
+    "name": "Expr_4_2",
+    "start": {
+      "line": 4,
+      "column": 2
+    },
+    "end": {
+      "line": 4,
+      "column": 10
+    },
+    "parents": {
+      "AugAssign_2_2": "excepts"
+    },
+    "children": {
+      "exit_Try_1_0": ""
+    },
+    "contents": [
+      "print(x)"
+    ]
+  },
+  "exit_Try_1_0": {
+    "name": "exit_Try_1_0",
+    "start": {
+      "line": 4,
+      "column": 10
+    },
+    "end": {
+      "line": 4,
+      "column": 10
+    },
+    "parents": {
+      "AugAssign_2_2": "",
+      "Expr_4_2": ""
+    },
+    "children": {},
+    "contents": []
+  }
+}
 
-TRY_WITH_FINALLY_ELSE = """
-try:
+TRY_WITH_FINALLY_ELSE = """try:
   x += 1
 except ArithmeticError:
   print("arithmetic")
@@ -440,6 +647,146 @@ else:
 finally:
   print("finally")
 """
+TRY_WITH_FINALLY_ELSE_JSON =  {
+  "Try_1_0": {
+    "name": "Try_1_0",
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 10,
+      "column": 18
+    },
+    "parents": {},
+    "children": {
+      "AugAssign_2_2": "try"
+    },
+    "contents": [
+      "try:\n    ...\nexcept ArithmeticError:\n    ...\nexcept Exception:\n    ...\nelse:\n    ...\nfinally:\n    ..."
+    ]
+  },
+  "AugAssign_2_2": {
+    "name": "AugAssign_2_2",
+    "start": {
+      "line": 2,
+      "column": 2
+    },
+    "end": {
+      "line": 2,
+      "column": 8
+    },
+    "parents": {
+      "Try_1_0": "try"
+    },
+    "children": {
+      "Expr_4_2": "excepts",
+      "Expr_6_2": "excepts",
+      "Expr_8_2": "False"
+    },
+    "contents": [
+      "x += 1"
+    ]
+  },
+  "Expr_4_2": {
+    "name": "Expr_4_2",
+    "start": {
+      "line": 4,
+      "column": 2
+    },
+    "end": {
+      "line": 4,
+      "column": 21
+    },
+    "parents": {
+      "AugAssign_2_2": "excepts"
+    },
+    "children": {
+      "Expr_10_2": "finally"
+    },
+    "contents": [
+      "print('arithmetic')"
+    ]
+  },
+  "Expr_6_2": {
+    "name": "Expr_6_2",
+    "start": {
+      "line": 6,
+      "column": 2
+    },
+    "end": {
+      "line": 6,
+      "column": 20
+    },
+    "parents": {
+      "AugAssign_2_2": "excepts"
+    },
+    "children": {
+      "Expr_10_2": "finally"
+    },
+    "contents": [
+      "print('exception')"
+    ]
+  },
+  "Expr_8_2": {
+    "name": "Expr_8_2",
+    "start": {
+      "line": 8,
+      "column": 2
+    },
+    "end": {
+      "line": 8,
+      "column": 15
+    },
+    "parents": {
+      "AugAssign_2_2": "False"
+    },
+    "children": {
+      "Expr_10_2": "finally"
+    },
+    "contents": [
+      "print('else')"
+    ]
+  },
+  "exit_Try_1_0": {
+    "name": "exit_Try_1_0",
+    "start": {
+      "line": 10,
+      "column": 18
+    },
+    "end": {
+      "line": 10,
+      "column": 18
+    },
+    "parents": {
+      "Expr_10_2": ""
+    },
+    "children": {},
+    "contents": []
+  },
+  "Expr_10_2": {
+    "name": "Expr_10_2",
+    "start": {
+      "line": 10,
+      "column": 2
+    },
+    "end": {
+      "line": 10,
+      "column": 18
+    },
+    "parents": {
+      "Expr_8_2": "finally",
+      "Expr_4_2": "finally",
+      "Expr_6_2": "finally"
+    },
+    "children": {
+      "exit_Try_1_0": ""
+    },
+    "contents": [
+      "print('finally')"
+    ]
+  }
+}
 
 FUNCTION_AND_CLASS_COLLISIONS = """class Foo():
   def nice(self):
@@ -475,7 +822,7 @@ FUNCTION_AND_CLASS_COLLISIONS_JSON = {
           "FunctionDef_5_0": ""
         },
         "contents": [
-          "def nice(self):\n    \"\"\"...\"\"\""
+          "def nice(self):\n    ..."
         ]
       },
       "FunctionDef_5_0": {
@@ -495,7 +842,7 @@ FUNCTION_AND_CLASS_COLLISIONS_JSON = {
           "FunctionDef_10_0": ""
         },
         "contents": [
-          "def bar():\n    \"\"\"...\"\"\""
+          "def bar():\n    ..."
         ]
       },
       "FunctionDef_10_0": {
@@ -513,7 +860,7 @@ FUNCTION_AND_CLASS_COLLISIONS_JSON = {
         },
         "children": {},
         "contents": [
-          "def foo_bar():\n    \"\"\"...\"\"\""
+          "def foo_bar():\n    ..."
         ]
       }
     }
@@ -559,7 +906,7 @@ FUNCTION_AND_CLASS_COLLISIONS_JSON = {
         "parents": {},
         "children": {},
         "contents": [
-          "def baz():\n    \"\"\"...\"\"\""
+          "def baz():\n    ..."
         ]
       }
     }
@@ -582,7 +929,7 @@ FUNCTION_AND_CLASS_COLLISIONS_JSON = {
         "parents": {},
         "children": {},
         "contents": [
-          "def nice():\n    \"\"\"...\"\"\""
+          "def nice():\n    ..."
         ]
       }
     }
@@ -628,7 +975,7 @@ FUNCTION_AND_CLASS_COLLISIONS_JSON = {
         "parents": {},
         "children": {},
         "contents": [
-          "def nice():\n    \"\"\"...\"\"\""
+          "def nice():\n    ..."
         ]
       }
     }

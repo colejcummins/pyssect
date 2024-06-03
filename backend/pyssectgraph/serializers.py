@@ -21,7 +21,7 @@ def pyssect_loads(str: str):
 
 def _flatten_ast_node(node: ast.AST) -> ast.AST:
   """Turns an AST node with nested nodes into a flattened node for string representation."""
-  l = ast.Expr(ast.Constant('...'))
+  l = ast.Expr(ast.Ellipsis())
 
   if isinstance(node, ast.Try):
     flat_handlers = [ast.ExceptHandler(name=handler.name, type=handler.type, body=[l]) for handler in node.handlers]
@@ -29,9 +29,9 @@ def _flatten_ast_node(node: ast.AST) -> ast.AST:
 
   if hasattr(node, 'body') and not isinstance(node, ast.ExceptHandler):
     node.__setattr__('body', [l])
-  if hasattr(node, 'orelse'):
+  if hasattr(node, 'orelse') and node.orelse: # type: ignore
     node.__setattr__('orelse', [l])
-  if hasattr(node, 'finalbody'):
+  if hasattr(node, 'finalbody') and node.finalbody: # type: ignore
     node.__setattr__('finalbody', [l])
   return node
 

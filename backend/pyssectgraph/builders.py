@@ -1,6 +1,7 @@
 from types import CodeType, FrameType, FunctionType
 from graph import PyssectGraph
 from node import PyssectNode, Location, ControlEvent
+from serializers import pyssect_dumps
 from typing import Any, Sequence, Dict, Union, List
 from uuid import uuid4, UUID
 from inspect import getsource
@@ -154,8 +155,8 @@ class ASTtoCFG(ast.NodeVisitor):
 
   def _visit_try_block(self, node: Union[ast.Try, ast.TryStar]):
     cfg_node = self._build_node(node)
-    try_block = None
-    exit_parents: Sequence[PyssectNode] = []
+    try_block_name = ''
+    exit_parents: List[str] = []
     exit_node = self._build_empty_node(f"exit_{cfg_node.name}", Location.default_end(node))
     self.cfg.attach_child(cfg_node, self.cur_event)
     self.cfg.go_to(cfg_node.name)
@@ -163,32 +164,37 @@ class ASTtoCFG(ast.NodeVisitor):
     if node.body:
       self.cur_event = ControlEvent.ONTRY
       self._visit_block(node.body)
-      try_block = self.cfg.nodes[self.cfg.cur]
+      try_block_name = self.cfg.cur
+      if not (node.finalbody and node.orelse):
+        exit_parents.append(self.cfg.cur)
 
     for handler in node.handlers:
-      self.visit(handler)
-      exit_parents.append(self.cfg.nodes[self.cfg.cur])
-      self.cfg.go_to(try_block.name if try_block else cfg_node.name)
+      self.cur_event = ControlEvent.ONEXCEPTION
+      self._visit_block(handler.body)
+      exit_parents.append(self.cfg.cur)
+      self.cfg.go_to(try_block_name)
 
     if node.orelse:
       self.cur_event = ControlEvent.ONFALSE
+      self.cfg.go_to(try_block_name)
       self._visit_block(node.orelse)
-      exit_parents.append(self.cfg.nodes[self.cfg.cur])
+      exit_parents.append(self.cfg.cur)
 
+    self.cfg.nodes[exit_node.name] = exit_node
     if node.finalbody:
       self.cur_event = ControlEvent.ONFINALLY
       self._visit_block(node.finalbody)
-      for exit in exit_parents:
-        self.cfg.attach_parent(exit, ControlEvent.ONFINALLY)
-
-    self.cfg.attach_child(exit_node)
-    self.cfg.go_to(exit_node.name)
-
-  def visit_ExceptHandler(self, node: ast.ExceptHandler) -> Any:
-    cfg_node = self._build_node(node)
-    self.cfg.attach_child(cfg_node, ControlEvent.ONEXCEPTION)
-    self._visit_block(node.body)
-    self.cfg.go_to(cfg_node.name)
+      final_block = self.cfg.nodes[self.cfg.cur]
+      for parent in exit_parents:
+        self.cfg.go_to(parent)
+        self.cfg.attach_child(final_block, ControlEvent.ONFINALLY)
+      self.cfg.go_to(final_block.name)
+      self.cfg.attach_child(exit_node)
+    else:
+      for parent in exit_parents:
+        self.cfg.go_to(parent)
+        self.cfg.attach_child(exit_node)
+      self.cfg.go_to(exit_node.name)
 
   def visit_Return(self, node: ast.Return) -> Any:
     self._visit_interrupts(node)
@@ -201,7 +207,7 @@ class ASTtoCFG(ast.NodeVisitor):
     self._visit_interrupts(node)
 
   def _visit_interrupts(self, node: ast.AST) -> Any:
-    self.cfg.attach_child(self._build_node(node))
+    self.cfg.attach_child(self._build_node(node), self.cur_event)
     self.interrupting = True
 
   def visit_Break(self, node: ast.Break) -> Any:
