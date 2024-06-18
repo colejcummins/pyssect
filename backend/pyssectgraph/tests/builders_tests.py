@@ -33,6 +33,9 @@ class BuildersTests(unittest.TestCase):
   def test_try_with_finally_else(self):
     self.assertEqual(TRY_WITH_FINALLY_ELSE_JSON, self._prog_to_json(TRY_WITH_FINALLY_ELSE, False)['__main__']['nodes'])
 
+  def test_basic_match(self):
+    self.assertEqual(BASIC_MATCH_JSON, self._prog_to_json(BASIC_MATCH, False)['__main__']['nodes'])
+
   def test_function_and_class_collisions(self):
     self.assertEqual(FUNCTION_AND_CLASS_COLLISIONS_JSON, self._prog_to_json(FUNCTION_AND_CLASS_COLLISIONS))
 
@@ -784,6 +787,136 @@ TRY_WITH_FINALLY_ELSE_JSON =  {
     },
     "contents": [
       "print('finally')"
+    ]
+  }
+}
+
+BASIC_MATCH="""val = []
+match val:
+  case []:
+    print("list literal")
+  case list():
+    print("list constructor")
+  case _:
+    print("not recognized")
+"""
+BASIC_MATCH_JSON = {
+  "Assign_1_0": {
+    "name": "Assign_1_0",
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 1,
+      "column": 8
+    },
+    "parents": {},
+    "children": {
+      "Match_2_0": ""
+    },
+    "contents": [
+      "val = []"
+    ]
+  },
+  "Match_2_0": {
+    "name": "Match_2_0",
+    "start": {
+      "line": 2,
+      "column": 0
+    },
+    "end": {
+      "line": 8,
+      "column": 27
+    },
+    "parents": {
+      "Assign_1_0": ""
+    },
+    "children": {
+      "Expr_4_4": "matches",
+      "Expr_6_4": "matches",
+      "Expr_8_4": "matches"
+    },
+    "contents": [
+      "match val:\n    case []:\n        ...\n    case list():\n        ...\n    case _:\n        ..."
+    ]
+  },
+  "Expr_4_4": {
+    "name": "Expr_4_4",
+    "start": {
+      "line": 4,
+      "column": 4
+    },
+    "end": {
+      "line": 4,
+      "column": 25
+    },
+    "parents": {
+      "Match_2_0": "matches"
+    },
+    "children": {
+      "exit_Match_2_0": ""
+    },
+    "contents": [
+      "print('list literal')"
+    ]
+  },
+  "exit_Match_2_0": {
+    "name": "exit_Match_2_0",
+    "start": {
+      "line": 8,
+      "column": 27
+    },
+    "end": {
+      "line": 8,
+      "column": 27
+    },
+    "parents": {
+      "Expr_4_4": "",
+      "Expr_6_4": "",
+      "Expr_8_4": ""
+    },
+    "children": {},
+    "contents": []
+  },
+  "Expr_6_4": {
+    "name": "Expr_6_4",
+    "start": {
+      "line": 6,
+      "column": 4
+    },
+    "end": {
+      "line": 6,
+      "column": 29
+    },
+    "parents": {
+      "Match_2_0": "matches"
+    },
+    "children": {
+      "exit_Match_2_0": ""
+    },
+    "contents": [
+      "print('list constructor')"
+    ]
+  },
+  "Expr_8_4": {
+    "name": "Expr_8_4",
+    "start": {
+      "line": 8,
+      "column": 4
+    },
+    "end": {
+      "line": 8,
+      "column": 27
+    },
+    "parents": {
+      "Match_2_0": "matches"
+    },
+    "children": {
+      "exit_Match_2_0": ""
+    },
+    "contents": [
+      "print('not recognized')"
     ]
   }
 }

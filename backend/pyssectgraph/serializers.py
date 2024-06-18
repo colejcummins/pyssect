@@ -27,6 +27,10 @@ def _flatten_ast_node(node: ast.AST) -> ast.AST:
     flat_handlers = [ast.ExceptHandler(name=handler.name, type=handler.type, body=[l]) for handler in node.handlers]
     return ast.Try([l], flat_handlers, [l] if node.orelse else [], [l] if node.finalbody else [])
 
+  if isinstance(node, ast.Match):
+    cases = [ast.match_case(pattern=case.pattern, guard=case.guard, body=[l]) for case in node.cases]
+    return ast.Match(node.subject, cases)
+
   if hasattr(node, 'body') and not isinstance(node, ast.ExceptHandler):
     node.__setattr__('body', [l])
   if hasattr(node, 'orelse') and node.orelse: # type: ignore

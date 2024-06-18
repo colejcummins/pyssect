@@ -15,6 +15,7 @@ class ControlEvent(Enum):
   ONRETURN = "return"
   ONEXCEPTION = "excepts"
   ONFINALLY = "finally"
+  ONMATCH = "matches"
   ONTRY = "try"
   PASS = ""
 

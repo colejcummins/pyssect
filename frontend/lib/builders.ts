@@ -78,8 +78,8 @@ function buildEdge(edge: FlatEdge): Edge {
     source,
     target,
     arrowHeadType: ArrowHeadType.ArrowClosed,
-    sourceHandle: `handle-${source}-${transition || "default"}`,
-    targetHandle: `handle-${target}-${transition || "default"}`,
+    sourceHandle: `handle-${source}-${transition ?? "default"}`,
+    targetHandle: `handle-${target}-${transition ?? "default"}`,
     label: transition,
     style: {
       stroke: theme.colors.white,

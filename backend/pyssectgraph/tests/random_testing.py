@@ -275,7 +275,6 @@ finally:
   print("finally")
 """
 
-
 def test_if_exp(n):
   pdb.set_trace()
   return n if n < 5 else n - 1
@@ -292,3 +291,16 @@ def sum_lengths(cfg) -> int:
 
 def is_user_function(name: str) -> bool:
   return name not in builtins.__dict__
+
+def match_test():
+  val = []
+  match val:
+    case list():
+      print("list constructor")
+    case []:
+      print("list literal")
+    case _:
+      print("not recognized")
+
+if __name__ == '__main__':
+  pass

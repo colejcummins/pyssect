@@ -103,9 +103,23 @@ class GraphTests(unittest.TestCase):
     }), cfg)
 
   def test_rename_node(self):
+    node_a = PyssectNode('a')
+    node_b = PyssectNode('b')
+    node_c = PyssectNode('c')
     cfg = PyssectGraph('__main__')
 
+    cfg.attach_child(node_a)
+    cfg.attach_child(node_b, ControlEvent.ONTRUE)
+    cfg.go_to('b')
+    cfg.attach_child(node_c, ControlEvent.ONTRUE)
 
+    cfg.rename_node(node_b, 'new')
+
+    self.assertEqual(PyssectGraph('__main__', 'a', 'new', {
+      'a': PyssectNode('a', children={'new': ControlEvent.ONTRUE}),
+      'new': PyssectNode('new', parents={'a': ControlEvent.ONTRUE}, children={'c': ControlEvent.ONTRUE}),
+      'c': PyssectNode('c', parents={'new': ControlEvent.ONTRUE})
+    }), cfg)
 
   def test_to_json_str(self):
     cfg = PyssectGraph('test', 'a', 'a', {

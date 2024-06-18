@@ -196,6 +196,20 @@ class ASTtoCFG(ast.NodeVisitor):
         self.cfg.attach_child(exit_node)
       self.cfg.go_to(exit_node.name)
 
+  def visit_Match(self, node: ast.Match) -> Any:
+    cfg_node = self._build_node(node)
+    exit_node = self._build_empty_node(f"exit_{cfg_node.name}", Location.default_end(node))
+    self.cfg.attach_child(cfg_node, self.cur_event)
+    self.cfg.go_to(cfg_node.name)
+
+    for case in node.cases:
+      self.cur_event = ControlEvent.ONMATCH
+      self._visit_block(case.body)
+      self.cfg.attach_child(exit_node)
+      self.cfg.go_to(cfg_node.name)
+
+    self.cfg.go_to(cfg_node.name)
+
   def visit_Return(self, node: ast.Return) -> Any:
     self._visit_interrupts(node)
 

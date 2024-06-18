@@ -1,0 +1,8 @@
+{
+  "name": "backend",
+  "scripts": {
+    "start": "node server.ts"
+  },
+  "dependencies": {
+  }
+}
