@@ -15,9 +15,11 @@ const Handles = React.memo(({name, nodes, position}: HandlesProps): JSX.Element 
   return (
     <React.Fragment>
       {Object.entries(nodes).map(([_key, value]) => {
+        const handleName = `handle-${name}-${value.toString() || "default"}`;
         return (
           <Handle
-            id={`handle-${name}-${value.toString() || "default"}`}
+            key={handleName}
+            id={handleName}
             type={position === Position.Top ? "target" : "source"}
             position={position}
             isConnectable={false}
